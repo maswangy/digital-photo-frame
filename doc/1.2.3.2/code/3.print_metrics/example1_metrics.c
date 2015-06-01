@@ -138,7 +138,7 @@ int main(int argc, char**  argv)
 
         // 将glyph加载到glyph插槽中，并将glyph转换为bitmap(位图)，保存在slot->bitmap中。
         error = FT_Load_Char(face, chinese_str[n], FT_LOAD_RENDER);
-        if ( error )
+        if (error)
             continue;                 /* ignore errors */
 
         // 从glyph插槽中获得glyph
