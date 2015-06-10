@@ -1,3 +1,12 @@
+/********************************************************************************
+** Copyright (C) 2015 <ericrock@foxmail.com>
+** File name         : ebook.c
+** Author            : wuweidong
+** Last modified data: 2015-6-10
+** Description       :
+** Todo              :
+********************************************************************************/
+
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -50,7 +59,8 @@ int open_file(char *name)
 void close_file()
 {
     struct stat *buf = &(file.stat_buf);
-    munmap((void*)file.map_buf, buf->st_size);
+    char *map_buf = file.map_buf;
+    munmap((void*)map_buf, buf->st_size);
     close(file.fd);
 }
 
@@ -68,6 +78,11 @@ int main(int argc, char **argv)
     if (open_file(argv[1]) == -1) {
         ERR_PRINT("fail to open txt file %s\n", argv[1]);
     }
+#if 0
+    if (encode_init() == -1) {
+        ERR_PRINT("fail to init encode module\n");
+    }
+#endif
 
     close_file();
 
