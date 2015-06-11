@@ -10,8 +10,10 @@ LDFLAGS := -lm -lfreetype
 CC 	:= $(CROSSCOMPILE)gcc
 LD 	:= $(CROSSCOMPILE)ld
 
-OBJS := ebook.o
-
+OBJS := ebook.o \
+		encode/encode.o \
+		encode/ascii.o \
+		
 all: $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PRJ) $^
 

@@ -7,48 +7,42 @@
 ** Todo              :
 ********************************************************************************/
 
-#include <stdio.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include "config.h"
 
-struct file_info {
+struct txt_info {
     int fd;
     char *map_buf;
     struct stat stat_buf;
 };
-struct file_info file;
+struct txt_info txt;
 
-int open_file(char *name)
+int open_txt(char *name)
 {
     struct stat *stat_buf;
     char *map_buf;
     int i = 0;
 
-    if ((file.fd = open(name, O_RDONLY)) == -1) {
+    if ((txt.fd = open(name, O_RDONLY)) == -1) {
         ERR_PRINT("fail to open %s\n", name);
         return -1;
     }
 
-    if (fstat(file.fd, &(file.stat_buf)) == -1) {
-        ERR_PRINT("fail to fstat %d\n", file.fd);
+    if (fstat(txt.fd, &(txt.stat_buf)) == -1) {
+        ERR_PRINT("fail to fstat %d\n", txt.fd);
         return -1;
     }
 
-    stat_buf = &(file.stat_buf);
-    file.map_buf = (char *)mmap(NULL, stat_buf->st_size, PROT_READ, MAP_SHARED, file.fd, 0);
-    if (file.map_buf == MAP_FAILED) {
-        ERR_PRINT("fail to mmap %d\n", file.fd);
+    stat_buf = &(txt.stat_buf);
+    txt.map_buf = (char *)mmap(NULL, stat_buf->st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
+    if (txt.map_buf == MAP_FAILED) {
+        ERR_PRINT("fail to mmap %d\n", txt.fd);
         return -1;
     }
 
-    DBG_PRINT("file:\n");
-    map_buf = file.map_buf;
+    DBG_PRINT("txt:\n");
+    map_buf = txt.map_buf;
     for (i=0; i<32; i++) {
-        DBG_PRINT("%02x ", map_buf[i]);
+        DBG_PRINT("%02x ", (0xff & map_buf[i]));
         if (!((i+1)%16) ) {
             DBG_PRINT("\n");
         }
@@ -56,12 +50,12 @@ int open_file(char *name)
     return 0;
 }
 
-void close_file()
+void close_txt()
 {
-    struct stat *buf = &(file.stat_buf);
-    char *map_buf = file.map_buf;
+    struct stat *buf = &(txt.stat_buf);
+    char *map_buf = txt.map_buf;
     munmap((void*)map_buf, buf->st_size);
-    close(file.fd);
+    close(txt.fd);
 }
 
 void print_usage(int argc, char **argv)
@@ -75,8 +69,8 @@ int main(int argc, char **argv)
         print_usage(argc, argv);
         return -1;
     }
-    if (open_file(argv[1]) == -1) {
-        ERR_PRINT("fail to open txt file %s\n", argv[1]);
+    if (open_txt(argv[1]) == -1) {
+        ERR_PRINT("fail to open txt txt %s\n", argv[1]);
     }
 #if 0
     if (encode_init() == -1) {
@@ -84,7 +78,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    close_file();
+    close_txt();
 
     return 0;
 }

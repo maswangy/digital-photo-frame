@@ -10,6 +10,13 @@
 #ifndef __CONFIG_H_
 #define __CONFIG_H_
 
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #define ERR_PRINT printf
 #define DBG_PRINT printf
 //#define DBG_PRINT(...)
