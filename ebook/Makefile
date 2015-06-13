@@ -1,14 +1,16 @@
+# ARM: make CROSS_COMPILE=arm-linux-gnueabihf-
+# X86: make
 PRJ := ebook 
 
-CROSSCOMPILE :=
+CROSS_COMPILE :=
 
 CFLAGS 	:= -Wall -O2 -c
 CFLAGS  += -I$(PWD)/include
 
 LDFLAGS := -lm -lfreetype
 
-CC 	:= $(CROSSCOMPILE)gcc
-LD 	:= $(CROSSCOMPILE)ld
+CC 	:= $(CROSS_COMPILE)gcc
+LD 	:= $(CROSS_COMPILE)ld
 
 OBJS := ebook.o \
 		encode/encode.o \

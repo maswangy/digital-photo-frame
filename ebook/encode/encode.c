@@ -32,10 +32,24 @@ void encode_list(void)
 
     PRINT_INFO("registered encode:\n");
     list_for_each(list, &entry) {
-        struct encode_ops *ops =
-            list_entry(list, struct encode_ops, list);
+        struct encode_ops *ops = list_entry(list, struct encode_ops, list);
         PRINT_INFO("%s\n", ops->name);
     }
+}
+
+int encode_select(struct txt_info *txt)
+{
+    struct list_head *list;
+
+    list_for_each(list, &entry) {
+        struct encode_ops *ops = list_entry(list, struct encode_ops, list);
+        if (ops->is_supported(txt->buf, txt->length)) {
+            txt->encode = ops->type;
+            PRINT_INFO("selected encode:%s\n", ops->name);
+            return 0;
+        }
+    }
+    return -1;
 }
 
 int encode_init(void)
