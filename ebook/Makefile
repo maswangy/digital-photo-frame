@@ -15,6 +15,9 @@ LD 	:= $(CROSS_COMPILE)ld
 OBJS := ebook.o \
 		encode/encode.o \
 		encode/ascii.o \
+		encode/iso8859.o \
+		bitmap/bitmap.o \
+		bitmap/freetype.o
 		
 all: $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PRJ) $^

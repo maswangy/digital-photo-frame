@@ -29,5 +29,13 @@ void encode_list(void);
 
 int ascii_encode_init(void);
 int ascii_encode_exit(void);
+int iso8859_encode_init(void);
+int iso8859_encode_exit(void);
+
+
+#define F 0   /* character never appears in text */
+#define T 1   /* character appears in plain ASCII text */
+#define I 2   /* character appears in ISO-8859 text */
+#define X 3   /* character appears in non-ISO extended ASCII (Mac, IBM PC) */
 
 #endif /* __ENCODE_H_ */
