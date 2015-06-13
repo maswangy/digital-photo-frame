@@ -2,12 +2,12 @@
 ** Copyright (C) 2015 <ericrock@foxmail.com>
 ** File name         : ebook.c
 ** Author            : wuweidong
-** Last modified data: 2015-6-10
 ** Description       :
 ** Todo              :
 ********************************************************************************/
 
 #include "config.h"
+#include "encode.h"
 
 struct txt_info {
     int fd;
@@ -23,28 +23,28 @@ int open_txt(char *name)
     int i = 0;
 
     if ((txt.fd = open(name, O_RDONLY)) == -1) {
-        ERR_PRINT("fail to open %s\n", name);
+        PRINT_ERR("fail to open %s\n", name);
         return -1;
     }
 
     if (fstat(txt.fd, &(txt.stat_buf)) == -1) {
-        ERR_PRINT("fail to fstat %d\n", txt.fd);
+        PRINT_ERR("fail to fstat %d\n", txt.fd);
         return -1;
     }
 
     stat_buf = &(txt.stat_buf);
     txt.map_buf = (char *)mmap(NULL, stat_buf->st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
     if (txt.map_buf == MAP_FAILED) {
-        ERR_PRINT("fail to mmap %d\n", txt.fd);
+        PRINT_ERR("fail to mmap %d\n", txt.fd);
         return -1;
     }
 
-    DBG_PRINT("txt:\n");
+    PRINT_DBG("txt:\n");
     map_buf = txt.map_buf;
     for (i=0; i<32; i++) {
-        DBG_PRINT("%02x ", (0xff & map_buf[i]));
+        PRINT_DBG("%02x ", (0xff & map_buf[i]));
         if (!((i+1)%16) ) {
-            DBG_PRINT("\n");
+            PRINT_DBG("\n");
         }
     }
     return 0;
@@ -60,7 +60,7 @@ void close_txt()
 
 void print_usage(int argc, char **argv)
 {
-    ERR_PRINT("Usage:%s filename\n", argv[0]);
+    PRINT_ERR("Usage:%s filename\n", argv[0]);
 }
 
 int main(int argc, char **argv)
@@ -70,13 +70,14 @@ int main(int argc, char **argv)
         return -1;
     }
     if (open_txt(argv[1]) == -1) {
-        ERR_PRINT("fail to open txt txt %s\n", argv[1]);
+        PRINT_ERR("fail to open txt txt %s\n", argv[1]);
     }
-#if 0
+
     if (encode_init() == -1) {
-        ERR_PRINT("fail to init encode module\n");
+        PRINT_ERR("fail to init encode module\n");
     }
-#endif
+
+    encode_list();
 
     close_txt();
 

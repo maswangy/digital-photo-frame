@@ -17,8 +17,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define ERR_PRINT printf
-#define DBG_PRINT printf
+#define PRINT_ERR printf
+#define PRINT_DBG printf
+#define PRINT_INFO printf
 //#define DBG_PRINT(...)
 
 #endif /* __CONFIG_H_ */

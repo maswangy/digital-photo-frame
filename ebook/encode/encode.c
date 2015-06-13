@@ -2,24 +2,59 @@
 ** Copyright (C) 2015 <ericrock@foxmail.com>
 ** File name         : encode.c
 ** Author            : wuweidong  
-** Last modified data: 2015-6-11
 ** Description       :
 ** Todo              :
 ********************************************************************************/
 
-#include "config.h"
 #include "encode.h"
+
+struct list_head entry;
 
 int register_encode_ops(struct encode_ops *ops)
 {
+    if (ops == NULL)
+        return -1;
+    list_add(&(ops->list), &entry);
     return 0;
+}
+
+int deregister_encode_ops(struct encode_ops *ops)
+{
+    if (ops == NULL)
+        return -1;
+    list_del(&(ops->list));
+    return 0;
+}
+
+void encode_list(void)
+{
+    struct list_head *list;
+
+    PRINT_INFO("registered encode:\n");
+    list_for_each(list, &entry) {
+        struct encode_ops *ops =
+            list_entry(list, struct encode_ops, list);
+        PRINT_INFO("%s\n", ops->name);
+    }
 }
 
 int encode_init(void)
 {
+    INIT_LIST_HEAD(&entry);
+
     if (ascii_encode_init() == -1) {
-        ERR_PRINT("fail to init encode\n");
+        PRINT_ERR("fail to init ascii encode\n");
         return -1;
     }
     return 0;
 }
+
+int encode_exit(void)
+{
+    if (ascii_encode_exit() == -1) {
+        PRINT_ERR("fail to exit ascii encode\n");
+        return -1;
+    }
+    return 0;
+}
+
