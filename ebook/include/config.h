@@ -19,16 +19,20 @@
 
 struct txt_info {
     int fd;
-    int encode;
     const unsigned char *buf;
     int length;
+    struct encode_ops *ecd_ops;
+    struct bitmap_ops *bmp_ops;
 };
 
 #define ENCODE_ASCII    (1)
 #define ENCODE_UTF8     (2)
 #define ENCODE_UTF16BE  (3)
 #define ENCODE_UTF16LE  (4)
+#define ENCODE_ISO8859  (5)
 
+#define BITMAP_FREETYPE (1)
+#define BITMAP_HZK      (2)
 
 #define PRINT_ERR printf
 #define PRINT_DBG printf

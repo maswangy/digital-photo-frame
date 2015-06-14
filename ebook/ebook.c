@@ -6,10 +6,34 @@
  ** Todo              :
  ********************************************************************************/
 
-#include "config.h"
 #include "encode.h"
+#include "bitmap.h"
+#include "config.h"
 
 struct txt_info txt;
+
+int show_one_page(struct txt_info *txt)
+{
+    struct encode_ops *ecd_ops;
+    int len;
+    unsigned char code;
+    const unsigned char *buf;
+    if (txt == NULL) {
+        return -1;
+    }
+    ecd_ops = txt->ecd_ops;
+    len = txt->length;
+    buf = txt->buf;
+
+    while (len--) {
+        if (ecd_ops->get_char_code(buf++, &code) == -1) {
+            return -1;
+        }
+        PRINT_DBG("%02x ", code);
+    }
+
+    return 0;
+}
 
 int open_txt(char *name)
 {
@@ -64,18 +88,20 @@ int main(int argc, char **argv)
     }
     if (open_txt(argv[1]) == -1) {
         PRINT_ERR("fail to open txt file %s\n", argv[1]);
+        return -1;
     }
 
     if (encode_init() == -1) {
         PRINT_ERR("fail to init encode module\n");
         goto exit;
     }
-
     encode_list();
     if (encode_select(&txt) == -1) {
         PRINT_ERR("fail to select encode type\n");
         goto exit;
     }
+
+    show_one_page(&txt);
 
     if (encode_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");
@@ -84,6 +110,5 @@ int main(int argc, char **argv)
 
 exit:
     close_txt();
-
     return 0;
 }

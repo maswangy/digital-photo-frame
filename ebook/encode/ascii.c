@@ -49,6 +49,10 @@ static int ascii_is_supported(const unsigned char *buf, int length)
 
 static int ascii_get_char_code(const unsigned char *buf, unsigned char *code)
 {
+    if (buf == NULL || code == NULL || text_chars[*buf] != T) {
+        return -1;
+    }
+    *code = *buf;
     return 0;
 }
 
