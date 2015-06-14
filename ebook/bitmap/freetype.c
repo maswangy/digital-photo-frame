@@ -9,13 +9,21 @@
 #include "config.h"
 #include "bitmap.h"
 
-int freetype_get_char_bitmap(const unsigned char *buf)
+static int freetype_is_supported(int encode)
+{
+
+    return 0;
+}
+
+static int freetype_get_char_bitmap(const unsigned char *buf)
 {
     return 0;
 }
-struct bitmap_ops freetype_bitmap_ops = {
+
+static struct bitmap_ops freetype_bitmap_ops = {
         .name = "freetype",
         .type = BITMAP_FREETYPE,
+        .is_supported = freetype_is_supported,
         .get_char_bitmap = freetype_get_char_bitmap,
 };
 

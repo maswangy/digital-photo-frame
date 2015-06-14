@@ -56,7 +56,7 @@ static int ascii_get_char_code(const unsigned char *buf, unsigned int *code)
     return 1;
 }
 
-struct encode_ops ascii_encode_ops = {
+static struct encode_ops ascii_encode_ops = {
         .name = "ascii",
         .type = ENCODE_ASCII,
         .is_supported = ascii_is_supported,

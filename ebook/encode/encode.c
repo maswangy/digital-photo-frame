@@ -56,28 +56,31 @@ int encode_init(void)
 {
     INIT_LIST_HEAD(&entry);
 
+    if (iso8859_encode_init() == -1) {
+        PRINT_ERR("fail to init iso8859 encode\n");
+        return -1;
+    }
+
     if (ascii_encode_init() == -1) {
         PRINT_ERR("fail to init ascii encode\n");
         return -1;
     }
 
-    if (iso8859_encode_init() == -1) {
-        PRINT_ERR("fail to init iso8859 encode\n");
-        return -1;
-    }
     return 0;
 }
 
 int encode_exit(void)
 {
-    if (iso8859_encode_exit() == -1) {
-        PRINT_ERR("fail to exit iso8859 encode\n");
-        return -1;
-    }
     if (ascii_encode_exit() == -1) {
         PRINT_ERR("fail to exit ascii encode\n");
         return -1;
     }
+
+    if (iso8859_encode_exit() == -1) {
+        PRINT_ERR("fail to exit iso8859 encode\n");
+        return -1;
+    }
+
     return 0;
 }
 

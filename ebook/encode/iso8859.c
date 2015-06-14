@@ -59,11 +59,9 @@ static int iso8859_get_char_code(const unsigned char *buf, unsigned int *code)
         *code = (buf[0]<<8) | buf[1];
         return 2;
     }
-
-    return 0;
 }
 
-struct encode_ops iso8859_encode_ops = {
+static struct encode_ops iso8859_encode_ops = {
         .name = "iso8859",
         .type = ENCODE_ISO8859,
         .is_supported = iso8859_is_supported,

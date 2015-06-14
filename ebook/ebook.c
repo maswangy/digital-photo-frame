@@ -12,27 +12,51 @@
 
 struct txt_info txt;
 
+void lcd_draw_font_8x8(int x, int y, unsigned char *bitmap)
+{
+    int i;
+    int j;
+
+    PRINT_DBG("bitmap:\n");
+    for (i = 0; i < 8; i++) {
+        PRINT_DBG("%x\n",bitmap[i]);
+#if 0
+        for (j = 7; j >= 0; j--) {
+            if (bitmap[i] & (1<<j))
+                lcd_draw_pixel(x+7-j, y+i, 0x0000ff);           // blue
+            else
+                lcd_draw_pixel(x+7-j, y+i, 0x0);
+        }
+#endif
+    }
+}
+
 int show_one_page(struct txt_info *txt)
 {
     struct encode_ops *ecd_ops;
+    struct bitmap_ops *bmp_ops;
     int len;
     unsigned int code;
-    const unsigned char *buf;
+    unsigned char *bitmap = NULL;
+    const unsigned char *txt_buf;
+
     if (txt == NULL) {
         return -1;
     }
     ecd_ops = txt->ecd_ops;
+    bmp_ops = txt->bmp_ops;
     len = txt->length;
-    buf = txt->buf;
+    txt_buf = txt->buf;
 
     while (len--) {
-        if (ecd_ops->get_char_code(buf++, &code) == -1) {
+        if (ecd_ops->get_char_code(txt_buf++, &code) == -1) {
             return -1;
         }
-        PRINT_DBG("%02x ", code);
-        if (!(len % 16)) {
-            PRINT_DBG("\n");
+
+        if (bmp_ops->get_char_bitmap(code, &bitmap) == -1) {
+            return -1;
         }
+        lcd_draw_font_8x8(1920/2, 1080/2, bitmap);
     }
 
     return 0;
@@ -98,9 +122,23 @@ int main(int argc, char **argv)
         PRINT_ERR("fail to init encode module\n");
         goto exit;
     }
+
     encode_list();
+
     if (encode_select(&txt) == -1) {
         PRINT_ERR("fail to select encode type\n");
+        goto exit;
+    }
+
+    if (bitmap_init() == -1) {
+        PRINT_ERR("fail to init bitmap module\n");
+        goto exit;
+    }
+
+    bitmap_list();
+
+    if (bitmap_select(&txt) == -1) {
+        PRINT_ERR("fail to select bitmap type\n");
         goto exit;
     }
 
