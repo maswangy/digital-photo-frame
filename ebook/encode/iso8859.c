@@ -47,8 +47,19 @@ static int iso8859_is_supported(const unsigned char *buf, int length)
     return 1;
 }
 
-static int iso8859_get_char_code(const unsigned char *buf, unsigned char *code)
+static int iso8859_get_char_code(const unsigned char *buf, unsigned int *code)
 {
+    if (buf == NULL || code == NULL || (text_chars[*buf] != T && text_chars[*buf] != I)) {
+        return -1;
+    }
+    if (buf[0] < (unsigned char)0x80) {
+        *code = buf[0];
+        return 1;
+    } else {
+        *code = (buf[0]<<8) | buf[1];
+        return 2;
+    }
+
     return 0;
 }
 

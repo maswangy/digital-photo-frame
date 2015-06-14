@@ -61,23 +61,19 @@ int encode_init(void)
         return -1;
     }
 
-#if 0
     if (iso8859_encode_init() == -1) {
         PRINT_ERR("fail to init iso8859 encode\n");
         return -1;
     }
-#endif
     return 0;
 }
 
 int encode_exit(void)
 {
-#if 0
     if (iso8859_encode_exit() == -1) {
         PRINT_ERR("fail to exit iso8859 encode\n");
         return -1;
     }
-#endif
     if (ascii_encode_exit() == -1) {
         PRINT_ERR("fail to exit ascii encode\n");
         return -1;

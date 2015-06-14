@@ -17,7 +17,7 @@ struct encode_ops {
     char *name;
     int type;
     int (*is_supported)(const unsigned char *buf, int length);
-    int (*get_char_code)(const unsigned char *buf, unsigned char *code);
+    int (*get_char_code)(const unsigned char *buf, unsigned int *code);
 };
 
 int register_encode_ops(struct encode_ops *ops);

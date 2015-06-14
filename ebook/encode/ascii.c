@@ -47,13 +47,13 @@ static int ascii_is_supported(const unsigned char *buf, int length)
     return 1;
 }
 
-static int ascii_get_char_code(const unsigned char *buf, unsigned char *code)
+static int ascii_get_char_code(const unsigned char *buf, unsigned int *code)
 {
     if (buf == NULL || code == NULL || text_chars[*buf] != T) {
         return -1;
     }
-    *code = *buf;
-    return 0;
+    *code = (unsigned int)(*buf);
+    return 1;
 }
 
 struct encode_ops ascii_encode_ops = {

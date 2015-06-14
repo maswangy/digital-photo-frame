@@ -16,7 +16,7 @@ int show_one_page(struct txt_info *txt)
 {
     struct encode_ops *ecd_ops;
     int len;
-    unsigned char code;
+    unsigned int code;
     const unsigned char *buf;
     if (txt == NULL) {
         return -1;
@@ -30,6 +30,9 @@ int show_one_page(struct txt_info *txt)
             return -1;
         }
         PRINT_DBG("%02x ", code);
+        if (!(len % 16)) {
+            PRINT_DBG("\n");
+        }
     }
 
     return 0;
