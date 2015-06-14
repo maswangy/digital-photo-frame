@@ -1,4 +1,18 @@
 # digital-photo-frame
-数码相框源码和笔记
+项目：数码相框和电子书
 
-能在X86和ARM上运行；
+电子书：ebook
+一、特性
+1. 支持ARM、X86(32/64bit)；
+2. 借鉴Linux内核采用模块化、面向对象的思想；
+3. 借鉴Linux内核链表；
+
+
+二、编译运行
+ARM: make CROSS_COMPILE=arm-linux-gnueabihf-
+X86: make
+
+
+
+
+数码相框：
