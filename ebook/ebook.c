@@ -40,6 +40,7 @@ int show_one_page(struct txt_info *txt)
     x = y = 0;
 #endif
     PRINT_DBG("x=%d y=%d\n", x, y);
+    dsp_ops->clear_screen(0xE7DBB5);
     while (len--) {
         if (ecd_ops->get_char_code(txt_buf++, &code) == -1) {
             return -1;
@@ -53,8 +54,6 @@ int show_one_page(struct txt_info *txt)
         for (i = 0; i < 8; i++) {
             for (j = 7; j >= 0; j--) {
                 if (bitmap[i] & (1<<j))
-                    dsp_ops->draw_pixel(x+7-j, y+i, 0x0000ff);           // blue
-                else
                     dsp_ops->draw_pixel(x+7-j, y+i, 0x0);
             }
         }

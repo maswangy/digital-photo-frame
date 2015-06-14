@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/fb.h>
+#include <string.h>
 #include "config.h"
 #include "display.h"
 
@@ -41,9 +42,9 @@ static int fb_init(void)
 
     screen_bytes = var.xres * var.yres * var.bits_per_pixel / 8;
     if ((fb_mem = mmap(NULL, screen_bytes, PROT_READ|PROT_WRITE, MAP_SHARED, fd_fb, 0)) == MAP_FAILED) {
-         printf("fail to mmap fb\n");
-         return -1;
-     }
+        printf("fail to mmap fb\n");
+        return -1;
+    }
     return 0;
 }
 static int fb_draw_pixel(int x, int y, unsigned int color)
@@ -75,22 +76,63 @@ static int fb_draw_pixel(int x, int y, unsigned int color)
         break;
     }
     default: {
-        printf("Unsupported %d bpp\n",pixel_bytes * 8);
+        PRINT_ERR("Unsupported bpp:%d\n", var.bits_per_pixel);
     }
     }
     return 0;
 }
 
+int fb_clear_screen(int color)
+{
+    int red, green, blue;
+    int screen_bytes = var.xres * var.yres * var.bits_per_pixel / 8;
+    unsigned char *pixel_8 = fb_mem;
+    unsigned short *pixel_16 = (unsigned short *)(pixel_8);
+    unsigned int *pixel_32 = (unsigned int *)(pixel_8);
+    int i = 0;
+
+    switch(var.bits_per_pixel) {
+    case 8: {
+        memset(fb_mem, color, screen_bytes);
+        break;
+    }
+    case 16: {
+        // rgb:5bit 6bit 5bit
+        red   = (color >> 16) & 0xff;
+        green = (color >> 8) & 0xff;
+        blue  = (color >> 0) & 0xff;
+        color = ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
+        while (i < screen_bytes) {
+            *pixel_16++ = color;
+            i += 2;
+        }
+        break;
+    }
+    case 32: {
+        while (i < screen_bytes) {
+            *pixel_32++ = color;
+            i += 4;
+        }
+        break;
+    }
+    default: {
+        break;
+        PRINT_ERR("Unsupported bpp:%d\n", var.bits_per_pixel);
+        return -1;
+    }
+    }
+    return 0;
+}
 static struct display_ops fb_display_ops = {
         .name = "fb",
         .type = DISPLAY_FB,
-        .init = fb_init,
         .draw_pixel = fb_draw_pixel,
+        .clear_screen = fb_clear_screen,
 };
 
 int fb_display_init(void)
 {
-    fb_display_ops.init();
+    fb_init();
     fb_display_ops.xres = var.xres;
     fb_display_ops.yres = var.xres;
     if (register_display_ops(&fb_display_ops) == -1) {

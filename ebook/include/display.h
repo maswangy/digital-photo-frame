@@ -18,8 +18,8 @@ struct display_ops {
     int type;
     int xres;
     int yres;
-    int (*init)();
     int (*draw_pixel)(int x, int y, unsigned int color);
+    int (*clear_screen)(int color);
 };
 
 int register_display_ops(struct display_ops *ops);
