@@ -23,6 +23,7 @@ struct txt_info {
     int length;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
+    struct display_ops *dsp_ops;
 };
 
 #define ENCODE_ASCII        (1)
@@ -34,6 +35,8 @@ struct txt_info {
 #define BITMAP_FREETYPE     (1)
 #define BITMAP_HZK          (2)
 #define BITMAP_ASCII_8X8    (3)
+
+#define DISPLAY_FB          (1)
 
 #define PRINT_ERR printf
 #define PRINT_DBG printf

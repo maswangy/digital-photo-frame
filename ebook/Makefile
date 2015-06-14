@@ -17,7 +17,9 @@ OBJS := ebook.o \
 		encode/ascii.o \
 		encode/iso8859.o \
 		bitmap/bitmap.o \
-		bitmap/freetype.o
+		bitmap/ascii/ascii_8x8.o \
+		display/display.o \
+		display/fb.o
 		
 all: $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PRJ) $^

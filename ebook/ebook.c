@@ -8,33 +8,17 @@
 
 #include "encode.h"
 #include "bitmap.h"
+#include "display.h"
 #include "config.h"
 
 struct txt_info txt;
 
-void lcd_draw_font_8x8(int x, int y, unsigned char *bitmap)
-{
-    int i;
-    int j;
-
-    PRINT_DBG("bitmap:\n");
-    for (i = 0; i < 8; i++) {
-        PRINT_DBG("%x\n",bitmap[i]);
-#if 0
-        for (j = 7; j >= 0; j--) {
-            if (bitmap[i] & (1<<j))
-                lcd_draw_pixel(x+7-j, y+i, 0x0000ff);           // blue
-            else
-                lcd_draw_pixel(x+7-j, y+i, 0x0);
-        }
-#endif
-    }
-}
-
 int show_one_page(struct txt_info *txt)
 {
+    int x,y;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
+    struct display_ops *dsp_ops;
     int len;
     unsigned int code;
     unsigned char *bitmap = NULL;
@@ -45,9 +29,17 @@ int show_one_page(struct txt_info *txt)
     }
     ecd_ops = txt->ecd_ops;
     bmp_ops = txt->bmp_ops;
+    dsp_ops = txt->dsp_ops;
     len = txt->length;
     txt_buf = txt->buf;
 
+#if defined( __x86_64__) || defined(__i386__)
+    x = dsp_ops->xres / 2;
+    y = 0;
+#else               // ARM
+    x = y = 0;
+#endif
+    PRINT_DBG("x=%d y=%d\n", x, y);
     while (len--) {
         if (ecd_ops->get_char_code(txt_buf++, &code) == -1) {
             return -1;
@@ -56,7 +48,17 @@ int show_one_page(struct txt_info *txt)
         if (bmp_ops->get_char_bitmap(code, &bitmap) == -1) {
             return -1;
         }
-        lcd_draw_font_8x8(1920/2, 1080/2, bitmap);
+        int i;
+        int j;
+        for (i = 0; i < 8; i++) {
+            for (j = 7; j >= 0; j--) {
+                if (bitmap[i] & (1<<j))
+                    dsp_ops->draw_pixel(x+7-j, y+i, 0x0000ff);           // blue
+                else
+                    dsp_ops->draw_pixel(x+7-j, y+i, 0x0);
+            }
+        }
+        x+=8;
     }
 
     return 0;
@@ -142,14 +144,36 @@ int main(int argc, char **argv)
         goto exit;
     }
 
+    if (display_init() == -1) {
+        PRINT_ERR("fail to init display module\n");
+        goto exit;
+    }
+
+    display_list();
+
+    if (display_select(&txt) == -1) {
+        PRINT_ERR("fail to select display type\n");
+        goto exit;
+    }
+
     show_one_page(&txt);
+
+    if (display_exit() == -1) {
+        PRINT_ERR("fail to exit encode module\n");
+        goto exit;
+    }
+
+    if (bitmap_exit() == -1) {
+        PRINT_ERR("fail to exit encode module\n");
+        goto exit;
+    }
 
     if (encode_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");
         goto exit;
     }
 
-exit:
+    exit:
     close_txt();
     return 0;
 }
