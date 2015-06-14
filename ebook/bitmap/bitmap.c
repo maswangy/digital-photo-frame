@@ -1,10 +1,10 @@
 /******************************************************************************** 
-** Copyright (C) 2015 <ericrock@foxmail.com>
-** File name         : bitmap.c
-** Author            : wuweidong  
-** Description       :
-** Todo              :
-********************************************************************************/
+ ** Copyright (C) 2015 <ericrock@foxmail.com>
+ ** File name         : bitmap.c
+ ** Author            : wuweidong
+ ** Description       :
+ ** Todo              :
+ ********************************************************************************/
 
 #include "bitmap.h"
 #include "encode.h"
@@ -69,6 +69,12 @@ int bitmap_init(void)
         PRINT_ERR("fail to init ascii 8x8 bitmap\n");
         return -1;
     }
+
+    if (ascii_8x16_bitmap_init() == -1) {
+        PRINT_ERR("fail to init ascii 8x16 bitmap\n");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -82,6 +88,11 @@ int bitmap_exit(void)
 #endif
     if (ascii_8x8_bitmap_exit() == -1) {
         PRINT_ERR("fail to exit ascii 8x8 bitmap\n");
+        return -1;
+    }
+
+    if (ascii_8x16_bitmap_exit() == -1) {
+        PRINT_ERR("fail to exit ascii 8x16 bitmap\n");
         return -1;
     }
 

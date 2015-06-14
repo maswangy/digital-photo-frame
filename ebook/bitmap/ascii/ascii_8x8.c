@@ -2599,6 +2599,10 @@ static int ascii_8x8_get_char_bitmap(unsigned int code, unsigned char **bitmap)
 static struct bitmap_ops ascii_8x8_bitmap_ops = {
         .name = "ascii_8x8",
         .type = BITMAP_ASCII_8X8,
+        .fr = {
+                .width = 8,
+                .height = 8,
+        },
         .is_supported = ascii_8x8_is_supported,
         .get_char_bitmap = ascii_8x8_get_char_bitmap,
 };

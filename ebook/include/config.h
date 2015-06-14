@@ -35,6 +35,7 @@ struct txt_info {
 #define BITMAP_FREETYPE     (1)
 #define BITMAP_HZK          (2)
 #define BITMAP_ASCII_8X8    (3)
+#define BITMAP_ASCII_8X16   (4)
 
 #define DISPLAY_FB          (1)
 

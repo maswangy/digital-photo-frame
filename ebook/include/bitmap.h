@@ -12,10 +12,16 @@
 #include "config.h"
 #include "list.h"
 
+struct bitmap_frame {
+    int width;
+    int height;
+};
+
 struct bitmap_ops {
     struct list_head list;
     char *name;
     int type;
+    struct bitmap_frame fr;
     int (*is_supported)(int encode);
     int (*get_char_bitmap)(unsigned int code, unsigned char **bitmap);
 };
@@ -33,7 +39,8 @@ int freetype_bitmap_exit(void);
 #endif
 int ascii_8x8_bitmap_init(void);
 int ascii_8x8_bitmap_exit(void);
-
+int ascii_8x16_bitmap_init(void);
+int ascii_8x16_bitmap_exit(void);
 
 
 

@@ -19,6 +19,7 @@ int show_one_page(struct txt_info *txt)
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;
+    struct bitmap_frame *fr;
     int len;
     unsigned int code;
     unsigned char *bitmap = NULL;
@@ -30,6 +31,7 @@ int show_one_page(struct txt_info *txt)
     ecd_ops = txt->ecd_ops;
     bmp_ops = txt->bmp_ops;
     dsp_ops = txt->dsp_ops;
+    fr = &(bmp_ops->fr);
     len = txt->length;
     txt_buf = txt->buf;
 
@@ -51,8 +53,8 @@ int show_one_page(struct txt_info *txt)
         }
         int i;
         int j;
-        for (i = 0; i < 8; i++) {
-            for (j = 7; j >= 0; j--) {
+        for (i = 0; i < fr->height; i++) {
+            for (j = fr->width-1; j >= 0; j--) {
                 if (bitmap[i] & (1<<j))
                     dsp_ops->draw_pixel(x+7-j, y+i, 0x0);
             }
