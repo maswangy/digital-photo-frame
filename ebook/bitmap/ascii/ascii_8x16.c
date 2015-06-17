@@ -2322,7 +2322,7 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
     0x00, /* 00000000 */
     0x00, /* 00000000 */
 
-    /* 128 0x80 '€' */
+    /* 128 0x80 '鈧� */
     0x00, /* 00000000 */
     0x00, /* 00000000 */
     0x3c, /* 00111100 */
@@ -4608,7 +4608,7 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
     0x00, /* 00000000 */
     0x00, /* 00000000 */
 
-    /* 255 0xff '' */
+    /* 255 0xff '铮� */
     0x00, /* 00000000 */
     0x00, /* 00000000 */
     0x00, /* 00000000 */
@@ -4628,6 +4628,10 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
 
 };
 
+static int ascii_8x16_init(void)
+{
+    return 0;
+}
 
 static int ascii_8x16_is_supported(int encode)
 {
@@ -4636,22 +4640,25 @@ static int ascii_8x16_is_supported(int encode)
     }
     return 0;
 }
-static int ascii_8x16_get_char_bitmap(unsigned int code, unsigned char **bitmap)
+
+static int ascii_8x16_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
 {
     if (code > 0x80) {
         return -1;
     }
-    *bitmap = (unsigned char *)&fontdata_8x16[code*16];
+    *bitmap = (unsigned char *)&fontdata_8x16[code*16];    
+    cf->xmax = cf->xmin + 8;
+    cf->ymax = cf->ymin + 16;
+    cf->width = 8;
+    cf->height = 16;
+    
     return 0;
 }
 
 static struct bitmap_ops ascii_8x16_bitmap_ops = {
         .name = "ascii_8x16",
         .type = BITMAP_ASCII_8X16,
-        .fr = {
-                .width = 8,
-                .height = 16,
-        },
+        .init = ascii_8x16_init,
         .is_supported = ascii_8x16_is_supported,
         .get_char_bitmap = ascii_8x16_get_char_bitmap,
 };

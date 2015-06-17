@@ -26,23 +26,23 @@ static int fb_init(void)
 
     // open fb
     if ((fd_fb = open("/dev/fb0", O_RDWR)) == -1) {
-        printf("fail to open /dev/fb0\n");
+        PRINT_ERR("fail to open /dev/fb0\n");
         return -1;
     }
 
     // get fb var&fix info
     if (ioctl(fd_fb, FBIOGET_VSCREENINFO, &var) == -1) {
-        printf("fail to ioctl var\n");
+        PRINT_ERR("fail to ioctl var\n");
         return -1;
     }
     if (ioctl(fd_fb, FBIOGET_FSCREENINFO, &fix) == -1) {
-        printf("fail to ioctl fix\n");
+        PRINT_ERR("fail to ioctl fix\n");
         return -1;
     }
 
     screen_bytes = var.xres * var.yres * var.bits_per_pixel / 8;
     if ((fb_mem = mmap(NULL, screen_bytes, PROT_READ|PROT_WRITE, MAP_SHARED, fd_fb, 0)) == MAP_FAILED) {
-        printf("fail to mmap fb\n");
+        PRINT_ERR("fail to mmap fb\n");
         return -1;
     }
     return 0;

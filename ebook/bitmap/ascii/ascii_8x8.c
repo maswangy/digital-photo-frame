@@ -2580,6 +2580,11 @@ static unsigned char fontdata_8x8[FONTDATAMAX] = {
 
 };
 
+static int ascii_8x8_init(void)
+{
+    return 0;
+}
+
 static int ascii_8x8_is_supported(int encode)
 {
     if (encode == ENCODE_ASCII) {
@@ -2587,22 +2592,25 @@ static int ascii_8x8_is_supported(int encode)
     }
     return 0;
 }
-static int ascii_8x8_get_char_bitmap(unsigned int code, unsigned char **bitmap)
+
+static int ascii_8x8_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
 {
     if (code > 0x80) {
         return -1;
     }
     *bitmap = (unsigned char *)&fontdata_8x8[code*8];
+
+    cf->xmax = cf->xmin + 8;
+    cf->ymax = cf->ymin + 8;
+    cf->width = cf->height = 8;
+    
     return 0;
 }
 
 static struct bitmap_ops ascii_8x8_bitmap_ops = {
         .name = "ascii_8x8",
         .type = BITMAP_ASCII_8X8,
-        .fr = {
-                .width = 8,
-                .height = 8,
-        },
+        .init = ascii_8x8_init,
         .is_supported = ascii_8x8_is_supported,
         .get_char_bitmap = ascii_8x8_get_char_bitmap,
 };

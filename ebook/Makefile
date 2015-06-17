@@ -19,6 +19,7 @@ OBJS := ebook.o \
 		bitmap/bitmap.o \
 		bitmap/ascii/ascii_8x8.o \
 		bitmap/ascii/ascii_8x16.o \
+		bitmap/hzk.o \
 		display/display.o \
 		display/fb.o
 		

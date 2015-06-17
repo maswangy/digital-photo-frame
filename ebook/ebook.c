@@ -19,11 +19,11 @@ int show_one_page(struct txt_info *txt)
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;
-    struct bitmap_frame *fr;
-    int len;
+    struct char_frame cf;
     unsigned int code;
     unsigned char *bitmap = NULL;
     const unsigned char *txt_buf;
+    int len;
 
     if (txt == NULL) {
         return -1;
@@ -31,8 +31,6 @@ int show_one_page(struct txt_info *txt)
     ecd_ops = txt->ecd_ops;
     bmp_ops = txt->bmp_ops;
     dsp_ops = txt->dsp_ops;
-    fr = &(bmp_ops->fr);
-    len = txt->length;
     txt_buf = txt->buf;
 
 #if defined( __x86_64__) || defined(__i386__)
@@ -41,25 +39,39 @@ int show_one_page(struct txt_info *txt)
 #else               // ARM
     x = y = 0;
 #endif
-    PRINT_DBG("x=%d y=%d\n", x, y);
+    PRINT_DBG("start(x=%d, y=%d)\n", x, y);
     dsp_ops->clear_screen(0xE7DBB5);
-    while (len--) {
-        if (ecd_ops->get_char_code(txt_buf++, &code) == -1) {
+    cf.xmin = x;
+    cf.ymin = y;
+    while (txt_buf < (txt->buf + txt->length)) {
+        if ((len = ecd_ops->get_char_code(txt_buf, &code)) == -1) {
             return -1;
         }
+        txt_buf += len;
+        PRINT_DBG("code:0x%x\n", code);
 
-        if (bmp_ops->get_char_bitmap(code, &bitmap) == -1) {
+        if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
             return -1;
         }
-        int i;
-        int j;
-        for (i = 0; i < fr->height; i++) {
-            for (j = fr->width-1; j >= 0; j--) {
-                if (bitmap[i] & (1<<j))
-                    dsp_ops->draw_pixel(x+7-j, y+i, 0x0);
+        int i, j, k;
+        unsigned char byte;
+        PRINT_DBG("xmin:%d\n", cf.xmin);
+        PRINT_DBG("ymin:%d\n", cf.ymin);
+        PRINT_DBG("xmax:%d\n", cf.xmax);
+        PRINT_DBG("ymax:%d\n", cf.ymax);
+        PRINT_DBG("width:%d\n", cf.width);
+        PRINT_DBG("height:%d\n\n", cf.height);
+     
+        for (i = 0; i < cf.height; i++) {          
+            for (k = 0; k < cf.width/8; k++) {       
+                byte = bitmap[i*cf.width/8 + k];
+                for (j = 7; j >= 0; j--) {
+                    if (byte & (1<<j))
+                        dsp_ops->draw_pixel(cf.xmin + (8*k) + (7-j), cf.ymin + i, 0x0);     
+                }
             }
-        }
-        x+=8;
+        }        
+        cf.xmin += cf.width;
     }
 
     return 0;
