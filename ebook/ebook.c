@@ -15,14 +15,14 @@ struct txt_info txt;
 
 int show_one_page(struct txt_info *txt)
 {
-    int x,y;
+    int startx, starty;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;
     struct char_frame cf;
     unsigned int code;
     unsigned char *bitmap = NULL;
-    const unsigned char *txt_buf;
+    const unsigned char *cur_buf;
     int len;
 
     if (txt == NULL) {
@@ -31,37 +31,63 @@ int show_one_page(struct txt_info *txt)
     ecd_ops = txt->ecd_ops;
     bmp_ops = txt->bmp_ops;
     dsp_ops = txt->dsp_ops;
-    txt_buf = txt->buf;
+    cur_buf = txt->buf;
 
 #if defined( __x86_64__) || defined(__i386__)
-    x = dsp_ops->xres / 2;
-    y = 0;
+    startx = dsp_ops->xres / 2;
+    starty = 0;
 #else               // ARM
-    x = y = 0;
+    startx = starty = 0;
 #endif
-    PRINT_DBG("start(x=%d, y=%d)\n", x, y);
+    PRINT_DBG("start(startx=%d, starty=%d) xres=%d yres=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres);
     dsp_ops->clear_screen(0xE7DBB5);
-    cf.xmin = x;
-    cf.ymin = y;
-    while (txt_buf < (txt->buf + txt->length)) {
-        if ((len = ecd_ops->get_char_code(txt_buf, &code)) == -1) {
-            return -1;
-        }
-        txt_buf += len;
-        PRINT_DBG("code:0x%x\n", code);
-
+    cf.xmin = startx;
+    cf.ymin = starty;
+    while (cur_buf < (txt->buf + txt->length)) {
+        if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
+            return (txt->buf - cur_buf);
+        }                
         if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
-            return -1;
+            return (txt->buf - cur_buf);
         }
-        int i, j, k;
-        unsigned char byte;
+        // if need change page
+        if ((cf.ymin + cf.height) > dsp_ops->yres ) {
+            return (txt->buf - cur_buf);
+        }
+
+#if 0       
+        PRINT_DBG("code:%x\n", code);
         PRINT_DBG("xmin:%d\n", cf.xmin);
         PRINT_DBG("ymin:%d\n", cf.ymin);
         PRINT_DBG("xmax:%d\n", cf.xmax);
         PRINT_DBG("ymax:%d\n", cf.ymax);
         PRINT_DBG("width:%d\n", cf.width);
         PRINT_DBG("height:%d\n\n", cf.height);
-     
+#endif
+        cur_buf += len;
+
+        // handle enter
+        if ( code == 0x0d0a) {
+            cf.xmin = startx;
+            cf.ymin = cf.ymin + cf.height;
+            continue;
+        }
+        // handle tab
+        if ( (unsigned char)code == '\t') {
+            cf.xmin += 3*8;
+            continue;
+        }
+        
+        // if need change line
+        // 1. meet enter;
+        // 2. meet x edge;
+        if ((cf.xmin + cf.width) > dsp_ops->xres) {
+            cf.xmin = startx;
+            cf.ymin += cf.height;
+        }
+                
+        int i, j, k;
+        unsigned char byte;
         for (i = 0; i < cf.height; i++) {          
             for (k = 0; k < cf.width/8; k++) {       
                 byte = bitmap[i*cf.width/8 + k];
@@ -70,10 +96,10 @@ int show_one_page(struct txt_info *txt)
                         dsp_ops->draw_pixel(cf.xmin + (8*k) + (7-j), cf.ymin + i, 0x0);     
                 }
             }
-        }        
+        }
         cf.xmin += cf.width;
+        // sleep(1);
     }
-
     return 0;
 }
 

@@ -41,8 +41,10 @@ static int iso8859_is_supported(const unsigned char *buf, int length)
     int i = 0;
     for (i = 0; i < length; i++) {
         int t = text_chars[buf[i]];
-        if (t != T && t != I)
+        if (t != T && t != I) {
+            PRINT_DBG("Not iso8859 code:%x\n", buf[i]);
             return 0;
+        }
     }
     return 1;
 }
@@ -53,8 +55,14 @@ static int iso8859_get_char_code(const unsigned char *buf, unsigned int *code)
         return -1;
     }
     if (buf[0] < (unsigned char)0x80) {
-        *code = buf[0];
-        return 1;
+        // handle enter code
+        if ( buf[0] == 0xd && buf[1] == 0xa) {
+            *code = (buf[0]<<8) | buf[1];
+            return 2;
+        } else {
+            *code = buf[0];
+            return 1;
+        }
     } else {
         *code = (buf[0]<<8) | buf[1];
         return 2;

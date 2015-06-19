@@ -134,7 +134,7 @@ int fb_display_init(void)
 {
     fb_init();
     fb_display_ops.xres = var.xres;
-    fb_display_ops.yres = var.xres;
+    fb_display_ops.yres = var.yres;
     if (register_display_ops(&fb_display_ops) == -1) {
         PRINT_ERR("fail to register %s display ops\n", fb_display_ops.name);
         return -1;
