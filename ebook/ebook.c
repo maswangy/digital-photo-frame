@@ -13,7 +13,7 @@
 
 struct txt_info txt;
 
-int show_one_page(struct txt_info *txt)
+int show_one_page(const unsigned char *page_buf)
 {
     int startx, starty;
     struct encode_ops *ecd_ops;
@@ -22,16 +22,12 @@ int show_one_page(struct txt_info *txt)
     struct char_frame cf;
     unsigned int code;
     unsigned char *bitmap = NULL;
-    const unsigned char *cur_buf;
+    const unsigned char *cur_buf = page_buf;
     int len;
 
-    if (txt == NULL) {
-        return -1;
-    }
-    ecd_ops = txt->ecd_ops;
-    bmp_ops = txt->bmp_ops;
-    dsp_ops = txt->dsp_ops;
-    cur_buf = txt->buf;
+    ecd_ops = txt.ecd_ops;
+    bmp_ops = txt.bmp_ops;
+    dsp_ops = txt.dsp_ops;
 
 #if defined( __x86_64__) || defined(__i386__)
     startx = dsp_ops->xres / 2;
@@ -43,16 +39,16 @@ int show_one_page(struct txt_info *txt)
     dsp_ops->clear_screen(0xE7DBB5);
     cf.xmin = startx;
     cf.ymin = starty;
-    while (cur_buf < (txt->buf + txt->length)) {
+    while (cur_buf < (page_buf + txt.length)) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
-            return (txt->buf - cur_buf);
+            return (cur_buf - page_buf);
         }                
         if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
-            return (txt->buf - cur_buf);
+            return (cur_buf - page_buf);
         }
         // if need change page
         if ((cf.ymin + cf.height) > dsp_ops->yres ) {
-            return (txt->buf - cur_buf);
+            return (cur_buf - page_buf);
         }
 
 #if 0       
@@ -79,7 +75,7 @@ int show_one_page(struct txt_info *txt)
             cf.xmin += 3*8;
             continue;
         }
-        
+
         // if need change line
         // 1. meet enter;
         // 2. meet x edge;
@@ -87,7 +83,7 @@ int show_one_page(struct txt_info *txt)
             cf.xmin = startx;
             cf.ymin += cf.height;
         }
-                
+
         int i, j, k;
         unsigned char byte;
         for (i = 0; i < cf.height; i++) {          
@@ -152,6 +148,10 @@ void print_usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    const unsigned char *cur_page;
+    int len = 0;
+    char c;
+
     if (argc != 2) {
         print_usage(argc, argv);
         return -1;
@@ -197,8 +197,19 @@ int main(int argc, char **argv)
         goto exit;
     }
 
-    show_one_page(&txt);
-
+    cur_page = txt.buf;
+    len = show_one_page(cur_page);
+    cur_page += len;
+    PRINT_DBG("len=%d\n", len);
+    while (1) { 
+        switch (c = getchar()) {
+        case 'd':
+            len = show_one_page(cur_page);
+            cur_page += len; 
+            break;
+        }
+        PRINT_DBG("len=%d\n", len);
+    }
     if (display_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");
         goto exit;
