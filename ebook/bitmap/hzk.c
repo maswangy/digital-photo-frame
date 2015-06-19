@@ -7,6 +7,7 @@
  ********************************************************************************/
 #include "config.h"
 #include "bitmap.h"
+#include "8x16.h"
 
 unsigned char *hzk_mem;
 
@@ -44,20 +45,25 @@ static int hzk_is_supported(int encode)
 
 static int hzk_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
 {    
-    int areacode = (code>>8 & 0xff) - 0xA1;
-    int bitcode = (code & 0xff) - 0xA1;
+    int areacode;
+    int bitcode;
     
-    PRINT_DBG("area:0x%x bit=0x%x\n", areacode, bitcode);
-    if (code < 0x80) {
-        *bitmap = hzk_mem + bitcode * 32;
+    if (code <= 0x80) {
+        // use ascii_8x16 bitmap
+        *bitmap = (unsigned char *)&fontdata_8x16[code*16];    
+        cf->xmax = cf->xmin + 8;
+        cf->ymax = cf->ymin + 16;
+        cf->width = 8;
+        cf->height = 16;
     } else {
+        // use hzk16 bitmap
+        areacode = (code>>8 & 0xff) - 0xA1;
+        bitcode = (code & 0xff) - 0xA1;
         *bitmap = hzk_mem + areacode * 94 * 32 + bitcode * 32;
-    }
-
-    cf->xmax = cf->xmin + 16;
-    cf->ymax = cf->ymin + 16;
-    cf->width = cf->height = 16;
-    
+        cf->xmax = cf->xmin + 16;
+        cf->ymax = cf->ymin + 16;
+        cf->width = cf->height = 16;
+    }    
     return 0;
 }
 
