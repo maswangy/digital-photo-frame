@@ -55,7 +55,7 @@ static int iso8859_get_char_code(const unsigned char *buf, unsigned int *code)
         return -1;
     }
     if (buf[0] < (unsigned char)0x80) {
-        // handle enter code
+        // handle windows enter code
         if ( buf[0] == 0xd && buf[1] == 0xa) {
             *code = (buf[0]<<8) | buf[1];
             return 2;

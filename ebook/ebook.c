@@ -67,7 +67,9 @@ int show_one_page(struct txt_info *txt)
         cur_buf += len;
 
         // handle enter
-        if ( code == 0x0d0a) {
+        // 1. windows enter: 0d 0a = \r \n
+        // 2. unix enter: 0a = \n
+        if ( code == 0x0d0a || code == '\n') {
             cf.xmin = startx;
             cf.ymin = cf.ymin + cf.height;
             continue;
