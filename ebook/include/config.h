@@ -16,10 +16,17 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "list.h"
+
+struct page {
+    struct list_head list;
+    int id;
+    unsigned char *buf;
+};
 
 struct txt_info {
     int fd;
-    const unsigned char *buf;
+    unsigned char *buf;
     int length;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;

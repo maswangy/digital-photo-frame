@@ -6,12 +6,15 @@
  ** Todo              :
  ********************************************************************************/
 
+#include <stdlib.h>
 #include "encode.h"
 #include "bitmap.h"
 #include "display.h"
 #include "config.h"
 
 struct txt_info txt;
+static struct page page_entry;
+static struct page *cur_page;
 
 int show_one_page(const unsigned char *page_buf)
 {
@@ -101,6 +104,62 @@ int show_one_page(const unsigned char *page_buf)
     return 0;
 }
 
+void page_list(void)
+{
+    struct list_head *list;
+
+    PRINT_DBG("page_list:\n");
+    list_for_each(list, &(page_entry.list)) {
+        struct page *p = list_entry(list, struct page, list);
+        PRINT_INFO("%d\n", p->id);
+    }
+}
+
+int show_next_page(void) 
+{   
+    int len = 0;
+    struct list_head *cur_list = &(cur_page->list);
+    struct page *next_page = list_entry(cur_list->next, struct page, list);
+
+    if (next_page->buf == NULL) {
+        PRINT_DBG("page%d\n", cur_page->id);
+        len = show_one_page(cur_page->buf);
+    } else {
+        PRINT_DBG("page%d\n", cur_page->id);
+        len = show_one_page(next_page->buf);
+        cur_page = next_page;
+    }
+    PRINT_DBG("len=%d\n", len);
+    // still have next page ?
+    if ((cur_page->buf + len - txt.buf) >= txt.length) {
+        PRINT_DBG("end of novel\n");
+        return 1;
+    }
+    struct page *new_page = malloc(sizeof(struct page));
+    new_page->buf = cur_page->buf + len;
+    new_page->id = cur_page->id + 1;
+    PRINT_DBG("add new page,id=%d\n\n", new_page->id);
+    list_add_tail(&(new_page->list), &(page_entry.list));
+
+    page_list();
+    return 0;
+}
+
+int show_prev_page(void)
+{
+    struct list_head *cur_list = &(cur_page->list);
+    struct page *prev_page = list_entry(cur_list->prev, struct page, list);
+    if (prev_page->buf == NULL) {
+        PRINT_DBG("page%d\n", cur_page->id);
+        show_one_page(cur_page->buf);
+    } else {
+        PRINT_DBG("page%d\n", cur_page->id);
+        show_one_page(prev_page->buf);
+        cur_page = prev_page;
+    }
+    return 0;
+}
+
 int open_txt(char *name)
 {
     struct stat stat_buf;
@@ -117,7 +176,7 @@ int open_txt(char *name)
         return -1;
     }
 
-    txt.buf = (const unsigned char *)mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
+    txt.buf = (unsigned char *)mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
     if (txt.buf == MAP_FAILED) {
         PRINT_ERR("fail to mmap %d\n", txt.fd);
         return -1;
@@ -148,8 +207,6 @@ void print_usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    const unsigned char *cur_page;
-    int len = 0;
     char c;
 
     if (argc != 2) {
@@ -197,18 +254,30 @@ int main(int argc, char **argv)
         goto exit;
     }
 
-    cur_page = txt.buf;
-    len = show_one_page(cur_page);
-    cur_page += len;
-    PRINT_DBG("len=%d\n", len);
+    // head page, not have any data
+    page_entry.buf = NULL;
+    page_entry.id = -1;
+    INIT_LIST_HEAD(&(page_entry.list));
+
+    // first page
+    cur_page = malloc(sizeof(struct page));
+    cur_page->id = 1;
+    cur_page->buf = txt.buf;
+    list_add(&(cur_page->list), &(page_entry.list));
+    show_next_page();
+
     while (1) { 
+        PRINT_INFO("n:next page, p:previous page\n");
         switch (c = getchar()) {
-        case 'd':
-            len = show_one_page(cur_page);
-            cur_page += len; 
+        case 'n':
+            show_next_page();
+            break;
+        case 'p':
+            show_prev_page();
+            break;
+        default:
             break;
         }
-        PRINT_DBG("len=%d\n", len);
     }
     if (display_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");

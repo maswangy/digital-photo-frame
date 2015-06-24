@@ -16,13 +16,24 @@
 #include "display.h"
 
 static unsigned char *fb_mem;
-static struct fb_var_screeninfo var;
-static struct fb_fix_screeninfo fix;
+
+static int fb_init(void);
+static int fb_draw_pixel(int x, int y, unsigned int color);
+static int fb_clear_screen(int color);
+
+static struct display_ops fb_display_ops = {
+        .name = "fb",
+        .type = DISPLAY_FB,
+        .draw_pixel = fb_draw_pixel,
+        .clear_screen = fb_clear_screen,
+};
 
 static int fb_init(void)
 {
     int fd_fb;
     int screen_bytes;
+    struct fb_var_screeninfo var;
+    struct fb_fix_screeninfo fix;
 
     // open fb
     if ((fd_fb = open("/dev/fb0", O_RDWR)) == -1) {
@@ -39,8 +50,10 @@ static int fb_init(void)
         PRINT_ERR("fail to ioctl fix\n");
         return -1;
     }
-
-    screen_bytes = var.xres * var.yres * var.bits_per_pixel / 8;
+    fb_display_ops.xres = var.xres;
+    fb_display_ops.yres = var.yres;
+    fb_display_ops.bpp = var.bits_per_pixel;
+    screen_bytes = fb_display_ops.xres * fb_display_ops.yres * fb_display_ops.bpp / 8;
     if ((fb_mem = mmap(NULL, screen_bytes, PROT_READ|PROT_WRITE, MAP_SHARED, fd_fb, 0)) == MAP_FAILED) {
         PRINT_ERR("fail to mmap fb\n");
         return -1;
@@ -49,8 +62,8 @@ static int fb_init(void)
 }
 static int fb_draw_pixel(int x, int y, unsigned int color)
 {
-    int pixel_bytes = var.bits_per_pixel / 8;
-    int line_bytes = var.xres * var.bits_per_pixel / 8;
+    int pixel_bytes = fb_display_ops.bpp / 8;
+    int line_bytes = fb_display_ops.xres * fb_display_ops.bpp / 8;
     unsigned char *pixel_8 = fb_mem + y * line_bytes + x * pixel_bytes;
     unsigned short *pixel_16 = (unsigned short *)(pixel_8);
     unsigned int *pixel_32 = (unsigned int *)(pixel_8);
@@ -76,22 +89,22 @@ static int fb_draw_pixel(int x, int y, unsigned int color)
         break;
     }
     default: {
-        PRINT_ERR("Unsupported bpp:%d\n", var.bits_per_pixel);
+        PRINT_ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
     }
     }
     return 0;
 }
 
-int fb_clear_screen(int color)
+static int fb_clear_screen(int color)
 {
     int red, green, blue;
-    int screen_bytes = var.xres * var.yres * var.bits_per_pixel / 8;
+    int screen_bytes = fb_display_ops.xres * fb_display_ops.yres * fb_display_ops.bpp / 8;
     unsigned char *pixel_8 = fb_mem;
     unsigned short *pixel_16 = (unsigned short *)(pixel_8);
     unsigned int *pixel_32 = (unsigned int *)(pixel_8);
     int i = 0;
 
-    switch(var.bits_per_pixel) {
+    switch(fb_display_ops.bpp) {
     case 8: {
         memset(fb_mem, color, screen_bytes);
         break;
@@ -117,24 +130,17 @@ int fb_clear_screen(int color)
     }
     default: {
         break;
-        PRINT_ERR("Unsupported bpp:%d\n", var.bits_per_pixel);
+        PRINT_ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
         return -1;
     }
     }
     return 0;
 }
-static struct display_ops fb_display_ops = {
-        .name = "fb",
-        .type = DISPLAY_FB,
-        .draw_pixel = fb_draw_pixel,
-        .clear_screen = fb_clear_screen,
-};
 
 int fb_display_init(void)
 {
     fb_init();
-    fb_display_ops.xres = var.xres;
-    fb_display_ops.yres = var.yres;
+
     if (register_display_ops(&fb_display_ops) == -1) {
         PRINT_ERR("fail to register %s display ops\n", fb_display_ops.name);
         return -1;

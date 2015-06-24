@@ -18,6 +18,7 @@ struct display_ops {
     int type;
     int xres;
     int yres;
+    int bpp;
     int (*draw_pixel)(int x, int y, unsigned int color);
     int (*clear_screen)(int color);
 };

@@ -10,7 +10,6 @@
 #define __ENCODE_H_
 
 #include "config.h"
-#include "list.h"
 
 struct encode_ops {
     struct list_head list;
