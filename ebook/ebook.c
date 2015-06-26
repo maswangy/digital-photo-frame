@@ -16,7 +16,7 @@ struct txt_info txt;
 static struct page page_entry;
 static struct page *cur_page;
 
-int show_one_page(const unsigned char *page_buf)
+int show_one_page(struct page *p)
 {
     int startx, starty;
     struct encode_ops *ecd_ops;
@@ -25,8 +25,10 @@ int show_one_page(const unsigned char *page_buf)
     struct char_frame cf;
     unsigned int code;
     unsigned char *bitmap = NULL;
-    const unsigned char *cur_buf = page_buf;
+    unsigned char *cur_buf = p->buf;
     int len;
+
+    PRINT_DBG("show page: %d\n", p->id);
 
     ecd_ops = txt.ecd_ops;
     bmp_ops = txt.bmp_ops;
@@ -42,16 +44,16 @@ int show_one_page(const unsigned char *page_buf)
     dsp_ops->clear_screen(0xE7DBB5);
     cf.xmin = startx;
     cf.ymin = starty;
-    while (cur_buf < (page_buf + txt.length)) {
+    while (cur_buf < (p->buf + txt.length)) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
-            return (cur_buf - page_buf);
+            return (cur_buf - p->buf);
         }                
         if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
-            return (cur_buf - page_buf);
+            return (cur_buf - p->buf);
         }
         // if need change page
         if ((cf.ymin + cf.height) > dsp_ops->yres ) {
-            return (cur_buf - page_buf);
+            return (cur_buf - p->buf);
         }
 
 #if 0       
@@ -121,27 +123,33 @@ int show_next_page(void)
     struct list_head *cur_list = &(cur_page->list);
     struct page *next_page = list_entry(cur_list->next, struct page, list);
 
+    page_list();
+
     if (next_page->buf == NULL) {
-        PRINT_DBG("page%d\n", cur_page->id);
-        len = show_one_page(cur_page->buf);
+        len = show_one_page(cur_page);
     } else {
-        PRINT_DBG("page%d\n", cur_page->id);
-        len = show_one_page(next_page->buf);
+        len = show_one_page(next_page);
         cur_page = next_page;
+        cur_list = &(cur_page->list);
+        next_page = list_entry(cur_list->next, struct page, list);
     }
     PRINT_DBG("len=%d\n", len);
-    // still have next page ?
+
+    // end of novel
     if ((cur_page->buf + len - txt.buf) >= txt.length) {
         PRINT_DBG("end of novel\n");
         return 1;
     }
-    struct page *new_page = malloc(sizeof(struct page));
-    new_page->buf = cur_page->buf + len;
-    new_page->id = cur_page->id + 1;
-    PRINT_DBG("add new page,id=%d\n\n", new_page->id);
-    list_add_tail(&(new_page->list), &(page_entry.list));
 
-    page_list();
+    if (next_page->buf == (cur_page->buf + len) && next_page->id == (cur_page->id + 1)) {
+        return 0;
+    } else {
+        struct page *new_page = malloc(sizeof(struct page));
+        new_page->buf = cur_page->buf + len;
+        new_page->id = cur_page->id + 1;
+        PRINT_DBG("add new page: %d\n\n", new_page->id);
+        list_add_tail(&(new_page->list), &(page_entry.list));
+    }
     return 0;
 }
 
@@ -150,11 +158,9 @@ int show_prev_page(void)
     struct list_head *cur_list = &(cur_page->list);
     struct page *prev_page = list_entry(cur_list->prev, struct page, list);
     if (prev_page->buf == NULL) {
-        PRINT_DBG("page%d\n", cur_page->id);
-        show_one_page(cur_page->buf);
+        show_one_page(cur_page);
     } else {
-        PRINT_DBG("page%d\n", cur_page->id);
-        show_one_page(prev_page->buf);
+        show_one_page(prev_page);
         cur_page = prev_page;
     }
     return 0;
@@ -266,8 +272,8 @@ int main(int argc, char **argv)
     list_add(&(cur_page->list), &(page_entry.list));
     show_next_page();
 
+    PRINT_INFO("\n\nusage: n[next page], p[previous page]\n");
     while (1) { 
-        PRINT_INFO("n:next page, p:previous page\n");
         switch (c = getchar()) {
         case 'n':
             show_next_page();
