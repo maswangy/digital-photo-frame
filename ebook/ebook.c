@@ -40,15 +40,17 @@ int show_one_page(struct page *p)
 #else               // ARM
     startx = starty = 0;
 #endif
-    PRINT_DBG("start(startx=%d, starty=%d) xres=%d yres=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres);
+    PRINT_DBG("start(startx=%d, starty=%d) xres=%d yres=%d txt.length=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres, txt.length);
     dsp_ops->clear_screen(0xE7DBB5);
     cf.xmin = startx;
     cf.ymin = starty;
     while (cur_buf < (p->buf + txt.length)) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
+            PRINT_DBG("Fail to get_char_code\n");
             return (cur_buf - p->buf);
         }                
         if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
+            PRINT_DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
         // if need change page
@@ -56,8 +58,8 @@ int show_one_page(struct page *p)
             return (cur_buf - p->buf);
         }
 
-#if 0       
         PRINT_DBG("code:%x\n", code);
+#if 0
         PRINT_DBG("xmin:%d\n", cf.xmin);
         PRINT_DBG("ymin:%d\n", cf.ymin);
         PRINT_DBG("xmax:%d\n", cf.xmax);
@@ -95,15 +97,18 @@ int show_one_page(struct page *p)
             for (k = 0; k < cf.width/8; k++) {       
                 byte = bitmap[i*cf.width/8 + k];
                 for (j = 7; j >= 0; j--) {
-                    if (byte & (1<<j))
-                        dsp_ops->draw_pixel(cf.xmin + (8*k) + (7-j), cf.ymin + i, 0x0);     
+                    if (byte & (1<<j)) {
+                        //PRINT_DBG("draw_pixel\n");
+                        dsp_ops->draw_pixel(cf.xmin + (8*k) + (7-j), cf.ymin + i, 0x0);
+                    }
                 }
             }
         }
         cf.xmin += cf.width;
         // sleep(1);
     }
-    return 0;
+    PRINT_DBG("show_one_page end\n");
+    return (cur_buf - p->buf);
 }
 
 void page_list(void)

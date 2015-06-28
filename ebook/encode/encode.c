@@ -9,6 +9,27 @@
 #include "encode.h"
 
 static struct list_head entry;
+char text_chars[256] = {
+    /*                  BEL BS HT LF    FF CR    */
+    F, F, F, F, F, F, F, T, T, T, T, F, T, T, F, F,  /* 0x0X */
+    /*                              ESC          */
+    F, F, F, F, F, F, F, F, F, F, F, T, F, F, F, F,  /* 0x1X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x2X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x3X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x4X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x5X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x6X */
+    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, F,  /* 0x7X */
+    /*            NEL                            */
+    X, X, X, X, X, T, X, X, X, X, X, X, X, X, X, X,  /* 0x8X */
+    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,  /* 0x9X */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xaX */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xbX */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xcX */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xdX */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xeX */
+    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I   /* 0xfX */
+};
 
 int register_encode_ops(struct encode_ops *ops)
 {
@@ -56,6 +77,11 @@ int encode_init(void)
 {
     INIT_LIST_HEAD(&entry);
 
+    if (utf8_encode_init() == -1) {
+        PRINT_ERR("fail to init utf8 encode\n");
+        return -1;
+    }
+
     if (iso8859_encode_init() == -1) {
         PRINT_ERR("fail to init iso8859 encode\n");
         return -1;
@@ -81,6 +107,10 @@ int encode_exit(void)
         return -1;
     }
 
+    if (utf8_encode_exit() == -1) {
+        PRINT_ERR("fail to exit utf8 encode\n");
+        return -1;
+    }
     return 0;
 }
 

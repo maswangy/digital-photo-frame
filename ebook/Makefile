@@ -16,6 +16,7 @@ OBJS := ebook.o \
 		encode/encode.o \
 		encode/ascii.o \
 		encode/iso8859.o \
+		encode/utf8.o \
 		bitmap/bitmap.o \
 		bitmap/ascii/ascii_8x8.o \
 		bitmap/ascii/ascii_8x16.o \

@@ -9,29 +9,6 @@
 #include "config.h"
 #include "encode.h"
 
-
-static char text_chars[256] = {
-    /*                  BEL BS HT LF    FF CR    */
-    F, F, F, F, F, F, F, T, T, T, T, F, T, T, F, F,  /* 0x0X */
-    /*                              ESC          */
-    F, F, F, F, F, F, F, F, F, F, F, T, F, F, F, F,  /* 0x1X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x2X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x3X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x4X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x5X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T,  /* 0x6X */
-    T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, F,  /* 0x7X */
-    /*            NEL                            */
-    X, X, X, X, X, T, X, X, X, X, X, X, X, X, X, X,  /* 0x8X */
-    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,  /* 0x9X */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xaX */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xbX */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xcX */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xdX */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,  /* 0xeX */
-    I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I   /* 0xfX */
-};
-
 static int ascii_is_supported(const unsigned char *buf, int length)
 {
     if (buf == NULL || length < 0) {
@@ -41,8 +18,10 @@ static int ascii_is_supported(const unsigned char *buf, int length)
     int i = 0;
     for (i = 0; i < length; i++) {
         int t = text_chars[buf[i]];
-        if (t != T)
+        if (t != T) {
+            PRINT_DBG("Not ascii code:%x\n", buf[i]);
             return 0;
+        }
     }
     return 1;
 }
