@@ -49,6 +49,8 @@ struct txt_info {
 #define PRINT_ERR printf
 #define PRINT_DBG printf
 #define PRINT_INFO printf
-//#define DBG_PRINT(...)
+// #define PRINT_ERR(...)
+// #define PRINT_DBG(...)
+// #define PRINT_INFO(...)
 
 #endif /* __CONFIG_H_ */

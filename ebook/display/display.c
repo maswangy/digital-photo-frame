@@ -35,6 +35,7 @@ void display_list(void)
         struct display_ops *ops = list_entry(list, struct display_ops, list);
         PRINT_INFO("%s\n", ops->name);
     }
+    PRINT_INFO("\n");
 }
 
 int display_select(struct txt_info *txt)

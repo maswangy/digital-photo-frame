@@ -32,6 +32,10 @@ int iso8859_encode_init(void);
 int iso8859_encode_exit(void);
 int utf8_encode_init(void);
 int utf8_encode_exit(void);
+int utf16_be_encode_init(void);
+int utf16_be_encode_exit(void);
+int utf16_le_encode_init(void);
+int utf16_le_encode_exit(void);
 
 #define F 0   /* character never appears in text */
 #define T 1   /* character appears in plain ASCII text */

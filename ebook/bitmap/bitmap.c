@@ -30,12 +30,15 @@ int deregister_bitmap_ops(struct bitmap_ops *ops)
 void bitmap_list(void)
 {
     struct list_head *list;
+    int i = 1;
 
     PRINT_INFO("registered bitmap:\n");
     list_for_each(list, &entry) {
         struct bitmap_ops *ops = list_entry(list, struct bitmap_ops, list);
-        PRINT_INFO("%s\n", ops->name);
+        PRINT_INFO("%d.%s\n", i, ops->name);
+        i++;
     }
+    PRINT_INFO("\n");
 }
 
 int bitmap_select(struct txt_info *txt)

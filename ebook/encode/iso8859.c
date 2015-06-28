@@ -19,7 +19,7 @@ static int iso8859_is_supported(const unsigned char *buf, int length)
     for (i = 0; i < length; i++) {
         int t = text_chars[buf[i]];
         if (t != T && t != I) {
-            PRINT_DBG("Not iso8859 code:%x\n", buf[i]);
+            // PRINT_DBG("Not iso8859 code:%x\n", buf[i]);
             return 0;
         }
     }
