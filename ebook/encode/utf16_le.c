@@ -23,22 +23,12 @@ static int utf16_le_is_supported(const unsigned char *buf, int length)
 
 static int utf16_le_get_char_code(const unsigned char *buf, unsigned int *code)
 {
-    if (buf == NULL || code == NULL || (text_chars[*buf] != T && text_chars[*buf] != I)) {
+    if (buf == NULL || code == NULL) {
         return -1;
     }
-    if (buf[0] < (unsigned char)0x80) {
-        // handle windows enter code
-        if ( buf[0] == 0xd && buf[1] == 0xa) {
-            *code = (buf[0]<<8) | buf[1];
-            return 2;
-        } else {
-            *code = buf[0];
-            return 1;
-        }
-    } else {
-        *code = (buf[0]<<8) | buf[1];
-        return 2;
-    }
+    
+    *code = buf[1]<<8 | buf[0];
+    return 2;
 }
 
 static struct encode_ops utf16_le_encode_ops = {
