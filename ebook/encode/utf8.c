@@ -64,22 +64,56 @@ static int utf8_is_supported(const unsigned char *buf, int length)
 
 static int utf8_get_char_code(const unsigned char *buf, unsigned int *code)
 {
-    if (buf == NULL || code == NULL || (text_chars[*buf] != T && text_chars[*buf] != I)) {
+    if (buf == NULL || code == NULL) {
         return -1;
     }
-    if (buf[0] < (unsigned char)0x80) {
-        // handle windows enter code
-        if ( buf[0] == 0xd && buf[1] == 0xa) {
-            *code = (buf[0]<<8) | buf[1];
-            return 2;
+
+    int len = 0;
+    int n = 0;
+    unsigned long c;
+    *code = 0;
+    // 0x20: 0010 0000
+
+    if ((buf[0] & 0x80) == 0) {          /* 0xxx xxxx is plain ASCII */
+        *code = buf[0];
+        len = 1;
+        return len;
+    } else if ((buf[0] & 0x40) == 0) {   /* 10xx xxxx never happen */
+        *code = buf[0];
+        len = 1;
+        return len;
+    } else {
+        int following;
+        if ((buf[0] & 0x20) == 0) {         /* 110x xxxx */
+            c = buf[0] & 0x1f;
+            following = 1;
+        } else if ((buf[0] & 0x10) == 0) {  /* 1110xxxx */
+            c = buf[0] & 0xf;
+            following = 2;
+        } else if ((buf[0] & 0x08) == 0) {  /* 11110xxx */
+            c = buf[0] & 0x7;
+            following = 3;
+        } else if ((buf[0] & 0x04) == 0) {  /* 111110xx */
+            c = buf[0] & 0x3;
+            following = 4;
+        } else if ((buf[0] & 0x02) == 0) {  /* 1111110x */
+            c = buf[0] & 0x1;
+            following = 5;
         } else {
             *code = buf[0];
-            return 1;
+            len = 1;
+            return len;
         }
-    } else {
-        *code = (buf[0]<<8) | buf[1];
-        return 2;
+        len = following + 1;
+        for (n = 0; n < following; n++) {
+            // left byte must begin with 10
+            if ((buf[n+1] & 0x80) == 0 || (buf[n+1] & 0x40))
+                break;
+            c = (c << 6) + (buf[n+1] & 0x3f);
+        }
+        *code = c;
     }
+    return len;
 }
 
 static struct encode_ops utf8_encode_ops = {

@@ -53,12 +53,13 @@ int show_one_page(struct page *p)
             PRINT_DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
+#if 0
         // if need change page
         if ((cf.ymin + cf.height) > dsp_ops->yres ) {
             return (cur_buf - p->buf);
         }
+#endif
 
-        PRINT_DBG("code:%x\n", code);
 #if 0
         PRINT_DBG("xmin:%d\n", cf.xmin);
         PRINT_DBG("ymin:%d\n", cf.ymin);
@@ -67,6 +68,7 @@ int show_one_page(struct page *p)
         PRINT_DBG("width:%d\n", cf.width);
         PRINT_DBG("height:%d\n\n", cf.height);
 #endif
+        PRINT_DBG("code:%x len=%d\n", code, len);
         cur_buf += len;
 
         // handle enter
@@ -91,6 +93,7 @@ int show_one_page(struct page *p)
             cf.ymin += cf.height;
         }
 
+#if 0
         int i, j, k;
         unsigned char byte;
         for (i = 0; i < cf.height; i++) {          
@@ -104,6 +107,7 @@ int show_one_page(struct page *p)
                 }
             }
         }
+#endif
         cf.xmin += cf.width;
         // sleep(1);
     }
@@ -211,6 +215,34 @@ void close_txt()
     close(txt.fd);
 }
 
+void txt_head_remove(void)
+{
+    unsigned char *head;
+    if (txt.ecd_ops->type == ENCODE_UTF8) {
+        head = txt.buf;
+        if (head[0] == 0xef && head[1] == 0xbb && head[2] == 0xbf) {
+            txt.buf = txt.buf + 3;
+            txt.length -= 3;
+        }
+    }
+
+    if (txt.ecd_ops->type == ENCODE_UTF16BE) {
+        head = txt.buf;
+        if (head[0]==0xfe && head[1]==0xff) {
+            txt.buf = txt.buf + 2;
+            txt.buf -= 2;
+        }
+    }
+
+    if (txt.ecd_ops->type == ENCODE_UTF16LE) {
+        head = txt.buf;
+        if (head[0]==0xff && head[1]==0xfe) {
+            txt.buf = txt.buf + 2;
+            txt.buf -= 2;
+        }
+    }
+}
+
 void print_usage(int argc, char **argv)
 {
     PRINT_ERR("Usage:%s filename\n", argv[0]);
@@ -240,6 +272,8 @@ int main(int argc, char **argv)
         PRINT_ERR("fail to select encode type\n");
         goto exit;
     }
+
+    txt_head_remove();
 
     if (bitmap_init() == -1) {
         PRINT_ERR("fail to init bitmap module\n");

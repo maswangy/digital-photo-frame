@@ -47,7 +47,7 @@ int ascii_8x16_bitmap_init(void);
 int ascii_8x16_bitmap_exit(void);
 int hzk_bitmap_init(void);
 int hzk_bitmap_exit(void);
-
-
+int freetype_bitmap_init(void);
+int freetype_bitmap_exit(void);
 
 #endif /* __BITMAP_H_ */

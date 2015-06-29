@@ -51,7 +51,7 @@ int bitmap_select(struct txt_info *txt)
         if (ops->is_supported && ops->is_supported(ecd_ops->type)) {
             if (ops->init && ops->init() == 0) {
                 txt->bmp_ops = ops;
-                PRINT_INFO("selected bitmap:\n%s\n", ops->name);
+                PRINT_INFO("selected bitmap:\n%s\n\n", ops->name);
                 return 0;   
             }
         }
@@ -63,12 +63,10 @@ int bitmap_init(void)
 {
     INIT_LIST_HEAD(&entry);
 
-#if 0
     if (freetype_bitmap_init() == -1) {
         PRINT_ERR("fail to init freetype bitmap\n");
         return -1;
     }
-#endif
     
     if (hzk_bitmap_init() == -1) {
         PRINT_ERR("fail to init hzk bitmap\n");
@@ -90,12 +88,10 @@ int bitmap_init(void)
 
 int bitmap_exit(void)
 {
-#if 0
     if (freetype_bitmap_exit() == -1) {
         PRINT_ERR("fail to exit freetype bitmap\n");
         return -1;
     }
-#endif
 
     if (hzk_bitmap_exit() == -1) {
         PRINT_ERR("fail to exit ascii 8x8 bitmap\n");
