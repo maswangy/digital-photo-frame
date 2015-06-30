@@ -7,7 +7,7 @@ CROSS_COMPILE :=
 CFLAGS 	:= -Wall -O2 -c
 CFLAGS  += -I$(PWD)/include
 
-LDFLAGS := -lm -lfreetype
+LDFLAGS := -lfreetype -lm
 
 CC 	:= $(CROSS_COMPILE)gcc
 LD 	:= $(CROSS_COMPILE)ld
@@ -28,7 +28,7 @@ OBJS := ebook.o \
 		display/fb.o
 		
 all: $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PRJ) $^
+	$(CC) -o $(PRJ) $^ $(LDFLAGS)
 
 clean:
 	rm -f $(PRJ)

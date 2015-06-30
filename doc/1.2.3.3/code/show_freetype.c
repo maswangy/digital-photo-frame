@@ -119,16 +119,16 @@ int main(int argc, char **argv)
     FT_Vector     pen;                    /* untransformed origin  */
     FT_Error      error;
 
-    // ÓÃ¿í×Ö·û£¬Ò»¸ö×Ö·ûÓÃ4¸ö×Ö½Ú±£´æ
-    wchar_t *chinese_str = L"ÎâÎ°¶«ABC";
-    // Ðý×ª½Ç¶È
+    // ï¿½Ã¿ï¿½ï¿½Ö·ï¿½Ò»ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½Ö½Ú±ï¿½ï¿½ï¿½
+    wchar_t *chinese_str = L"ï¿½ï¿½Î°ï¿½ï¿½ABC";
+    // ï¿½ï¿½×ªï¿½Ç¶ï¿½
     angle = (1.0 * strtoul(argv[2],NULL,0)/ 360) * 3.14159 * 2;
 
     FT_Init_FreeType(&library);              /* initialize library */
     FT_New_Face(library, argv[1], 0, &face); /* create face object */
     FT_Set_Pixel_Sizes(face, 24, 0);
 
-    // glyph²å²Û£ºFT_GlyphSlot
+    // glyphï¿½ï¿½Û£ï¿½FT_GlyphSlot
     slot = face->glyph;
     /* set up matrix */
     matrix.xx = (FT_Fixed)( cos( angle ) * 0x10000L );
@@ -142,10 +142,10 @@ int main(int argc, char **argv)
     pen.y = (var.yres- 40) * 64;
 
     for (n = 0; n < wcslen(chinese_str); n++) {
-        // ÉèÖÃ±ä»»£¬°üÀ¨Ðý×ªºÍÒÆ¶¯
+        // ï¿½ï¿½ï¿½Ã±ä»»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½Æ¶ï¿½
         FT_Set_Transform(face, &matrix, &pen);
 
-        // ½«glyph¼ÓÔØµ½glyph²å²ÛÖÐ£¬²¢½«glyph×ª»»Îªbitmap(Î»Í¼)£¬±£´æÔÚslot->bitmapÖÐ¡£
+        // ï¿½ï¿½glyphï¿½ï¿½ï¿½Øµï¿½glyphï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½glyph×ªï¿½ï¿½Îªbitmap(Î»Í¼)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½slot->bitmapï¿½Ð¡ï¿½
         error = FT_Load_Char(face, chinese_str[n], FT_LOAD_RENDER );
         if (error)
             continue;                 /* ignore errors */

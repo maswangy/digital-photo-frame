@@ -7,6 +7,8 @@
  ********************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "encode.h"
 #include "bitmap.h"
 #include "display.h"
@@ -36,7 +38,7 @@ int show_one_page(struct page *p)
 
 #if defined( __x86_64__) || defined(__i386__)
     startx = dsp_ops->xres / 2;
-    starty = 0;
+    starty = dsp_ops->yres / 2;
 #else               // ARM
     startx = starty = 0;
 #endif
@@ -44,6 +46,8 @@ int show_one_page(struct page *p)
     dsp_ops->clear_screen(0xE7DBB5);
     cf.xmin = startx;
     cf.ymin = starty;
+    cf.disp_xres = dsp_ops->xres;
+    cf.disp_yres = dsp_ops->yres;
     while (cur_buf < (p->buf + txt.length)) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
             PRINT_DBG("Fail to get_char_code\n");
@@ -53,14 +57,15 @@ int show_one_page(struct page *p)
             PRINT_DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
-#if 0
+#if 1
         // if need change page
         if ((cf.ymin + cf.height) > dsp_ops->yres ) {
             return (cur_buf - p->buf);
         }
 #endif
 
-#if 0
+#if 1
+        PRINT_DBG("code:%x len=%d\n", code, len);
         PRINT_DBG("xmin:%d\n", cf.xmin);
         PRINT_DBG("ymin:%d\n", cf.ymin);
         PRINT_DBG("xmax:%d\n", cf.xmax);
@@ -68,7 +73,6 @@ int show_one_page(struct page *p)
         PRINT_DBG("width:%d\n", cf.width);
         PRINT_DBG("height:%d\n\n", cf.height);
 #endif
-        PRINT_DBG("code:%x len=%d\n", code, len);
         cur_buf += len;
 
         // handle enter
@@ -81,7 +85,13 @@ int show_one_page(struct page *p)
         }
         // handle tab
         if ( (unsigned char)code == '\t') {
-            cf.xmin += 3*8;
+            cf.xmin += 3 * 8;
+            continue;
+        }
+
+        // handle space
+        if ( (unsigned char)code == ' ') {
+            cf.xmin += 1 * 8;
             continue;
         }
 
@@ -93,7 +103,6 @@ int show_one_page(struct page *p)
             cf.ymin += cf.height;
         }
 
-#if 0
         int i, j, k;
         unsigned char byte;
         for (i = 0; i < cf.height; i++) {          
@@ -107,7 +116,7 @@ int show_one_page(struct page *p)
                 }
             }
         }
-#endif
+
         cf.xmin += cf.width;
         // sleep(1);
     }
@@ -175,14 +184,15 @@ int show_prev_page(void)
     return 0;
 }
 
-int open_txt(char *name)
+int open_txt(char *txt_file, char *ttc_file)
 {
     struct stat stat_buf;
     const unsigned char *buf;
     int i = 0;
 
-    if ((txt.fd = open(name, O_RDONLY)) == -1) {
-        PRINT_ERR("fail to open %s\n", name);
+    strcpy(txt.ttc_path, ttc_file);
+    if ((txt.fd = open(txt_file, O_RDONLY)) == -1) {
+        PRINT_ERR("fail to open %s\n", txt_file);
         return -1;
     }
 
@@ -230,7 +240,7 @@ void txt_head_remove(void)
         head = txt.buf;
         if (head[0]==0xfe && head[1]==0xff) {
             txt.buf = txt.buf + 2;
-            txt.buf -= 2;
+            txt.length -= 2;
         }
     }
 
@@ -238,25 +248,25 @@ void txt_head_remove(void)
         head = txt.buf;
         if (head[0]==0xff && head[1]==0xfe) {
             txt.buf = txt.buf + 2;
-            txt.buf -= 2;
+            txt.length -= 2;
         }
     }
 }
 
 void print_usage(int argc, char **argv)
 {
-    PRINT_ERR("Usage:%s filename\n", argv[0]);
+    PRINT_ERR("Usage:%s txt_file font_file\n", argv[0]);
 }
 
 int main(int argc, char **argv)
 {
     char c;
 
-    if (argc != 2) {
+    if (argc != 3) {
         print_usage(argc, argv);
         return -1;
     }
-    if (open_txt(argv[1]) == -1) {
+    if (open_txt(argv[1], argv[2]) == -1) {
         PRINT_ERR("fail to open txt file %s\n", argv[1]);
         return -1;
     }

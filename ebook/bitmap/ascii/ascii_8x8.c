@@ -10,7 +10,7 @@
 #include "bitmap.h"
 #include "8x8.h"
 
-static int ascii_8x8_init(void)
+static int ascii_8x8_init(char *txt_path, int bitmap_size)
 {
     return 0;
 }

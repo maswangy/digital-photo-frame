@@ -19,13 +19,15 @@ struct char_frame {
     int ymax;
     int width;
     int height;
+    int disp_xres;
+    int disp_yres;
 };
 
 struct bitmap_ops {
     struct list_head list;
     char *name;
     int type;
-    int (*init)();
+    int (*init)(char *txt_path, int bitmap_size);
     int (*is_supported)(int encode);
     int (*get_char_bitmap)(unsigned int code, unsigned char **bitmap, struct char_frame *cf);
 };

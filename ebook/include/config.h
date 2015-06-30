@@ -26,6 +26,7 @@ struct page {
 
 struct txt_info {
     int fd;
+    char ttc_path[64];
     unsigned char *buf;
     int length;
     struct encode_ops *ecd_ops;

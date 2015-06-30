@@ -11,7 +11,7 @@
 
 unsigned char *hzk_mem;
 
-static int hzk_init(void)
+static int hzk_init(char *txt_path, int bitmap_size)
 {
     int fd_hzk;
     struct stat hzk_stat;

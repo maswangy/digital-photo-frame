@@ -73,12 +73,12 @@ int main(int argc, char**  argv)
     int           target_height;
     int           n, num_chars;
 
-    // ²»ÄÜÓÃÏÂÃæÕâÖÖ·½Ê½£¬ÒòÎªºº×ÖÓÃÁ½¸ö×Ö½Ú£¬¶ø×ÖÄ¸ÓÃÒ»¸ö×Ö½Ú£¬Èç¹ûÓÃÏÂÃæ
-    // ÕâÖÖ·½Ê½µÄ»°£¬ÐèÒª×Ô¼º·ÖÎöºÎÊ±ÊÇºº×Ö£¬ºÎÊ±ÊÇ×ÖÄ¸¡£
-    //char *str = "ÎâÎ°¶«ABC";
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½Ö·ï¿½Ê½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Çºï¿½ï¿½Ö£ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½
+    //char *str = "ï¿½ï¿½Î°ï¿½ï¿½ABC";
 
-    // ÓÃ¿í×Ö·û£¬Ò»¸ö×Ö·ûÓÃ4¸ö×Ö½Ú±£´æ
-    wchar_t *chinese_str = L"ÎâÎ°¶«ABC";
+    // ï¿½Ã¿ï¿½ï¿½Ö·ï¿½Ò»ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½4ï¿½ï¿½ï¿½Ö½Ú±ï¿½ï¿½ï¿½
+    wchar_t *chinese_str = L"ï¿½ï¿½Î°ï¿½ï¿½ABC";
     unsigned int *p = (wchar_t *)chinese_str;
     int i;
     FT_BBox bbox;
@@ -118,7 +118,7 @@ int main(int argc, char**  argv)
 #endif
 
 
-    // glyph²å²Û£ºFT_GlyphSlot
+    // glyphï¿½ï¿½Û£ï¿½FT_GlyphSlot
     slot = face->glyph;
 
     /* set up matrix */
@@ -133,29 +133,29 @@ int main(int argc, char**  argv)
     pen.y = (target_height - 40) * 64;
 
     for (n = 0; n < wcslen(chinese_str); n++) {
-        // ÉèÖÃ±ä»»£¬°üÀ¨Ðý×ªºÍÒÆ¶¯
+        // ï¿½ï¿½ï¿½Ã±ä»»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½Æ¶ï¿½
         FT_Set_Transform(face, &matrix, &pen);
 
-        // ½«glyph¼ÓÔØµ½glyph²å²ÛÖÐ£¬²¢½«glyph×ª»»Îªbitmap(Î»Í¼)£¬±£´æÔÚslot->bitmapÖÐ¡£
+        // ï¿½ï¿½glyphï¿½ï¿½ï¿½Øµï¿½glyphï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½glyph×ªï¿½ï¿½Îªbitmap(Î»Í¼)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½slot->bitmapï¿½Ð¡ï¿½
         error = FT_Load_Char(face, chinese_str[n], FT_LOAD_RENDER);
         if (error)
             continue;                 /* ignore errors */
 
-        // ´Óglyph²å²ÛÖÐ»ñµÃglyph
+        // ï¿½ï¿½glyphï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½glyph
         error = FT_Get_Glyph( face->glyph, &glyph );
         if (error) {
             printf("FT_Get_Glyph error!\n");
             return -1;
         }
 
-        // ´ÓglyphÖÐ»ñµÃbbox£¬bboxÀï¾Í°üº¬ÁËmetricsµÄÏà¹ØÐÅÏ¢
+        // ï¿½ï¿½glyphï¿½Ð»ï¿½ï¿½bboxï¿½ï¿½bboxï¿½ï¿½Í°ï¿½ï¿½ï¿½metricsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
         FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_TRUNCATE, &bbox );
 
-        // ´òÓ¡metricsÀïµÄÏà¹ØÐÅÏ¢
+        // ï¿½ï¿½Ó¡metricsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
         printf("Unicode: 0x%x\n", chinese_str[n]);
         printf("origin.x/64 = %ld, origin.y/64 = %ld\n", pen.x/64, pen.y/64);
         printf("xMin = %ld, xMax = %ld, yMin = %ld, yMax = %ld\n", bbox.xMin, bbox.xMax, bbox.yMin, bbox.yMax);
-        printf("slot->advance.x/64 = %ld, slot->advance.y/64 = %ld\n", slot->advance.x/64, slot->advance.y/64);
+        printf("slot->advance.x/64 = %ld, slot->advance.y/64 = %ld\n\n", slot->advance.x/64, slot->advance.y/64);
         ///////////////////////////////////////////////////////////////////////
 
         /* now, draw to our target surface (convert position) */
