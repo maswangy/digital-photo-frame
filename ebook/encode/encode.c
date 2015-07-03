@@ -35,7 +35,7 @@ int register_encode_ops(struct encode_ops *ops)
 {
     if (ops == NULL)
         return -1;
-    list_add(&(ops->list), &entry);
+    list_add_tail(&(ops->list), &entry);
     return 0;
 }
 

@@ -43,26 +43,32 @@ static int hzk_is_supported(int encode)
     return 0;
 }
 
-static int hzk_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
+static int hzk_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct bitmap_info *bif)
 {    
     int areacode;
     int bitcode;
+    struct cell_frame *cf = &(bif->cf);
+    struct font_frame *ff = &(bif->ff);
     
     if (code <= 0x80) {
         // use ascii_8x16 bitmap
         *bitmap = (unsigned char *)&fontdata_8x16[code*16];    
-        cf->xmax = cf->xmin + 8;
-        cf->ymax = cf->ymin + 16;
-        cf->width = 8;
-        cf->height = 16;
+        ff->xmin = cf->xmin;
+        ff->ymin = cf->ymin;
+        ff->xmax = ff->xmin + 8;
+        ff->ymax = ff->ymin + 16;
+        ff->width = 8;
+        ff->height = 16;
     } else {
         // use hzk16 bitmap
         areacode = (code>>8 & 0xff) - 0xA1;
         bitcode = (code & 0xff) - 0xA1;
         *bitmap = hzk_mem + areacode * 94 * 32 + bitcode * 32;
-        cf->xmax = cf->xmin + 16;
-        cf->ymax = cf->ymin + 16;
-        cf->width = cf->height = 16;
+        ff->xmin = cf->xmin;
+        ff->ymin = cf->ymin;
+        ff->xmax = ff->xmin + 16;
+        ff->ymax = ff->ymin + 16;
+        ff->width = ff->height = 16;
     }    
     return 0;
 }
@@ -70,6 +76,7 @@ static int hzk_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct
 static struct bitmap_ops hzk_bitmap_ops = {
         .name = "hzk",
         .type = BITMAP_HZK,
+        .bpp  = 1,
         .init = hzk_init,
         .is_supported = hzk_is_supported,
         .get_char_bitmap = hzk_get_char_bitmap,

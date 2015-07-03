@@ -12,24 +12,37 @@
 #include "config.h"
 #include "list.h"
 
-struct char_frame {
+struct cell_frame {
     int xmin;
-    int ymin;
     int xmax;
+    int ymin;
     int ymax;
     int width;
     int height;
-    int disp_xres;
-    int disp_yres;
+};
+
+struct font_frame {
+    int xmin;
+    int xmax;
+    int ymin;
+    int ymax;
+    int width;
+    int height;
+};
+
+struct bitmap_info {
+    struct cell_frame cf;
+    struct font_frame ff;
 };
 
 struct bitmap_ops {
     struct list_head list;
     char *name;
     int type;
+    int bpp;
     int (*init)(char *txt_path, int bitmap_size);
     int (*is_supported)(int encode);
-    int (*get_char_bitmap)(unsigned int code, unsigned char **bitmap, struct char_frame *cf);
+    int (*get_char_bitmap)(unsigned int code, unsigned char **bitmap, struct bitmap_info *bif);
 };
 
 int register_bitmap_ops(struct bitmap_ops *ops);

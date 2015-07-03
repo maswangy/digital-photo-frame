@@ -29,6 +29,7 @@ struct txt_info {
     char ttc_path[64];
     unsigned char *buf;
     int length;
+    int font_size;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;

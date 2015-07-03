@@ -20,11 +20,11 @@ static FT_Matrix     matrix;
 
 static int freetype_init(char *ttc_path, int bitmap_size)
 {
-    int size = 0;
+    int size = 24;
     double angle = ( 0.0 / 360 ) * 3.14159 * 2;
 
-    if (bitmap_size == 0) {
-        size = 16;
+    if (bitmap_size != 0) {
+        size = bitmap_size;
     }
     if (FT_Init_FreeType(&library)) {
         return -1;
@@ -52,14 +52,18 @@ static int freetype_is_supported(int encode)
     return 0;
 }
 
-static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
+static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct bitmap_info *bif)
 {
     FT_Vector pen;
     FT_Bitmap *ft_bitmap;
     FT_BBox bbox;
     FT_Glyph  glyph;
+
+    struct cell_frame *cf = &(bif->cf);
+    struct font_frame *ff = &(bif->ff);
+
     pen.x = cf->xmin * 64;
-    pen.y = (cf->disp_yres- cf->ymin) * 64;
+    pen.y = cf->ymin * 64;
 
     FT_Set_Transform(face, &matrix, &pen);
 
@@ -73,28 +77,28 @@ static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, s
     }
 
     FT_Glyph_Get_CBox(glyph, FT_GLYPH_BBOX_TRUNCATE, &bbox );
-    PRINT_DBG("xMin = %ld, xMax = %ld, yMin = %ld, yMax = %ld\n", bbox.xMin, bbox.xMax, bbox.yMin, bbox.yMax);
-
-    PRINT_DBG("pen.x=%ld pen.y=%ld\n", pen.x / 64, pen.y / 64);
+    PRINT_DBG("\npen.x = %ld, pen.y = %ld, xMin = %ld, xMax = %ld, yMin = %ld, yMax = %ld\n", \
+            pen.x / 64, pen.y / 64, \
+            bbox.xMin, bbox.xMax, bbox.yMin, bbox.yMax);
+    if (bbox.xMin == 0 && bbox.xMax == 0 && bbox.yMin == 0 && bbox.yMax == 0) {
+        return 0;
+    }
     ft_bitmap = &slot->bitmap;
     *bitmap = ft_bitmap->buffer;
-    cf->xmin = slot->bitmap_left;
-    cf->ymin = cf->disp_yres - slot->bitmap_top;
-    cf->xmax = cf->xmin + ft_bitmap->width;
-    cf->ymax = cf->ymin + ft_bitmap->rows;
-    cf->width = ft_bitmap->width;
-    cf->height = ft_bitmap->rows;
+    ff->xmin = bbox.xMin;
+    ff->xmax = bbox.xMin + ft_bitmap->width;
+    ff->ymin = bbox.yMin;
+    ff->ymax = bbox.yMin + ft_bitmap->rows;
+    ff->width = ft_bitmap->width;
+    ff->height = ft_bitmap->rows;
 
-    PRINT_DBG("advance.x=%ld advance.y=%ld\n", slot->advance.x, slot->advance.y);
-    /* increment pen position */
-    pen.x += slot->advance.x;
-    pen.y += slot->advance.y;
     return 0;
 }
 
 static struct bitmap_ops freetype_bitmap_ops = {
         .name = "freetype",
         .type = BITMAP_FREETYPE,
+        .bpp  = 8,
         .init = freetype_init,
         .is_supported = freetype_is_supported,
         .get_char_bitmap = freetype_get_char_bitmap,

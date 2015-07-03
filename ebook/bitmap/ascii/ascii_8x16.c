@@ -23,16 +23,22 @@ static int ascii_8x16_is_supported(int encode)
     return 0;
 }
 
-static int ascii_8x16_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct char_frame *cf)
+static int ascii_8x16_get_char_bitmap(unsigned int code, unsigned char **bitmap, struct bitmap_info *bif)
 {
     if (code > 0x80) {
         return -1;
     }
-    *bitmap = (unsigned char *)&fontdata_8x16[code*16];    
-    cf->xmax = cf->xmin + 8;
-    cf->ymax = cf->ymin + 16;
-    cf->width = 8;
-    cf->height = 16;
+
+    struct cell_frame *cf = &(bif->cf);
+    struct font_frame *ff = &(bif->ff);
+
+    *bitmap = (unsigned char *)&fontdata_8x16[code*16];
+    ff->xmin = cf->xmin;
+    ff->ymin = cf->ymin;
+    ff->xmax = ff->xmin + 8;
+    ff->ymax = ff->ymin + 16;
+    ff->width = 8;
+    ff->height = 16;
     
     return 0;
 }
@@ -40,6 +46,7 @@ static int ascii_8x16_get_char_bitmap(unsigned int code, unsigned char **bitmap,
 static struct bitmap_ops ascii_8x16_bitmap_ops = {
         .name = "ascii_8x16",
         .type = BITMAP_ASCII_8X16,
+        .bpp  = 1,
         .init = ascii_8x16_init,
         .is_supported = ascii_8x16_is_supported,
         .get_char_bitmap = ascii_8x16_get_char_bitmap,

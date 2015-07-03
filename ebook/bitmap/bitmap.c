@@ -49,7 +49,7 @@ int bitmap_select(struct txt_info *txt)
     list_for_each(list, &entry) {
         struct bitmap_ops *ops = list_entry(list, struct bitmap_ops, list);
         if (ops->is_supported && ops->is_supported(ecd_ops->type)) {
-            if (ops->init && ops->init(txt->ttc_path, 0) == 0) {
+            if (ops->init && ops->init(txt->ttc_path, txt->font_size) == 0) {
                 txt->bmp_ops = ops;
                 PRINT_INFO("selected bitmap:\n%s\n\n", ops->name);
                 return 0;   

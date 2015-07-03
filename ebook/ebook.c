@@ -24,7 +24,6 @@ int show_one_page(struct page *p)
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;
-    struct char_frame cf;
     unsigned int code;
     unsigned char *bitmap = NULL;
     unsigned char *cur_buf = p->buf;
@@ -38,86 +37,111 @@ int show_one_page(struct page *p)
 
 #if defined( __x86_64__) || defined(__i386__)
     startx = dsp_ops->xres / 2;
-    starty = dsp_ops->yres / 2;
+    starty = 0;
 #else               // ARM
     startx = starty = 0;
 #endif
     PRINT_DBG("start(startx=%d, starty=%d) xres=%d yres=%d txt.length=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres, txt.length);
-    dsp_ops->clear_screen(0xE7DBB5);
-    cf.xmin = startx;
-    cf.ymin = starty;
-    cf.disp_xres = dsp_ops->xres;
-    cf.disp_yres = dsp_ops->yres;
+    dsp_ops->clear_screen(0);
+
+    struct bitmap_info bif;
+    struct cell_frame *cf = &(bif.cf);
+    struct font_frame *ff = &(bif.ff);
+    cf->height = cf->width = txt.font_size;
+    cf->xmin = startx;
+    cf->xmax = cf->xmin + cf->width;
+    cf->ymin = starty;
+    cf->ymax = cf->ymin + cf->height;
     while (cur_buf < (p->buf + txt.length)) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
             PRINT_DBG("Fail to get_char_code\n");
             return (cur_buf - p->buf);
         }                
-        if (bmp_ops->get_char_bitmap(code, &bitmap, &cf) == -1) {
+        if (bmp_ops->get_char_bitmap(code, &bitmap, &bif) == -1) {
             PRINT_DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
 #if 1
         // if need change page
-        if ((cf.ymin + cf.height) > dsp_ops->yres ) {
+        if ((cf->ymin + cf->height) > dsp_ops->yres ) {
+            PRINT_DBG("Page is full\n");
             return (cur_buf - p->buf);
         }
 #endif
-
-#if 1
-        PRINT_DBG("code:%x len=%d\n", code, len);
-        PRINT_DBG("xmin:%d\n", cf.xmin);
-        PRINT_DBG("ymin:%d\n", cf.ymin);
-        PRINT_DBG("xmax:%d\n", cf.xmax);
-        PRINT_DBG("ymax:%d\n", cf.ymax);
-        PRINT_DBG("width:%d\n", cf.width);
-        PRINT_DBG("height:%d\n\n", cf.height);
-#endif
         cur_buf += len;
+        PRINT_DBG("code:%x len=%d\n", code, len);
 
         // handle enter
         // 1. windows enter: 0d 0a = \r \n
         // 2. unix enter: 0a = \n
         if ( code == 0x0d0a || code == '\n') {
-            cf.xmin = startx;
-            cf.ymin = cf.ymin + cf.height;
+            cf->xmin = startx;
+            cf->ymin = cf->ymin + cf->height;
             continue;
         }
         // handle tab
-        if ( (unsigned char)code == '\t') {
-            cf.xmin += 3 * 8;
+        if ( code == '\t') {
+            cf->xmin += 4 * cf->width;
             continue;
         }
 
         // handle space
-        if ( (unsigned char)code == ' ') {
-            cf.xmin += 1 * 8;
+        if ( code == ' ') {
+            cf->xmin += 1 * cf->width;
             continue;
         }
 
         // if need change line
         // 1. meet enter;
         // 2. meet x edge;
-        if ((cf.xmin + cf.width) > dsp_ops->xres) {
-            cf.xmin = startx;
-            cf.ymin += cf.height;
+        if ((cf->xmin + cf->width) > dsp_ops->xres) {
+            cf->xmin = startx;
+            cf->ymin += cf->height;
         }
 
+#if 0
+        PRINT_DBG("xmin:%d\n", ff->xmin);
+        PRINT_DBG("xmax:%d\n", ff->xmax);
+        PRINT_DBG("ymin:%d\n", ff->ymin);
+        PRINT_DBG("ymax:%d\n", ff->ymax);
+        PRINT_DBG("width:%d\n", ff->width);
+        PRINT_DBG("height:%d\n", ff->height);
+#endif
         int i, j, k;
         unsigned char byte;
-        for (i = 0; i < cf.height; i++) {          
-            for (k = 0; k < cf.width/8; k++) {       
-                byte = bitmap[i*cf.width/8 + k];
-                for (j = 7; j >= 0; j--) {
-                    if (byte & (1<<j)) {
-                        //PRINT_DBG("draw_pixel\n");
-                        dsp_ops->draw_pixel(cf.xmin + (8*k) + (7-j), cf.ymin + i, 0x0);
+        int color = 0;
+        int offset = cf->height - (ff->ymin - cf->ymin) * 2 - ff->height;
+        switch (bmp_ops->bpp) {
+        case 1:
+            color = 0xffffffff;
+            for (i = 0; i < ff->height; i++) {
+                for (k = 0; k < ff->width/8; k++) {
+                    byte = bitmap[i*ff->width/8 + k];
+                    for (j = 7; j >= 0; j--) {
+                        if (byte & (1<<j)) {
+                            //PRINT_DBG("draw_pixel\n");
+                            dsp_ops->draw_pixel(ff->xmin + (8*k) + (7-j), ff->ymin + i, color);
+                        }
                     }
                 }
             }
+            break;
+        case 8:
+            color = 0xffffffff;
+            for (i = 0; i < ff->height; i++) {
+                for (j = 0; j < ff->width; j++) {
+                    // PRINT_DBG("(%d, %d)%2x\n", ff->xmin + j , ff->ymin + i + offset, bitmap[i * ff->width + j]);
+                    if (bitmap[i * ff->width + j] != 0) {
+                        dsp_ops->draw_pixel(ff->xmin + j, ff->ymin + i + offset, color);
+                    }
+                }
+            }
+            break;
+        default:
+            break;
         }
 
-        cf.xmin += cf.width;
+        cf->xmin += cf->width;
         // sleep(1);
     }
     PRINT_DBG("show_one_page end\n");
@@ -184,7 +208,7 @@ int show_prev_page(void)
     return 0;
 }
 
-int open_txt(char *txt_file, char *ttc_file)
+int open_txt(char *txt_file, char *ttc_file, char *font_size)
 {
     struct stat stat_buf;
     const unsigned char *buf;
@@ -216,6 +240,7 @@ int open_txt(char *txt_file, char *ttc_file)
             PRINT_DBG("\n");
         }
     }
+    txt.font_size = atoi(font_size);
     return 0;
 }
 
@@ -255,18 +280,18 @@ void txt_head_remove(void)
 
 void print_usage(int argc, char **argv)
 {
-    PRINT_ERR("Usage:%s txt_file font_file\n", argv[0]);
+    PRINT_ERR("Usage:%s txt_file font_file font_size\n", argv[0]);
 }
 
 int main(int argc, char **argv)
 {
     char c;
 
-    if (argc != 3) {
+    if (argc != 4) {
         print_usage(argc, argv);
         return -1;
     }
-    if (open_txt(argv[1], argv[2]) == -1) {
+    if (open_txt(argv[1], argv[2], argv[3]) == -1) {
         PRINT_ERR("fail to open txt file %s\n", argv[1]);
         return -1;
     }
