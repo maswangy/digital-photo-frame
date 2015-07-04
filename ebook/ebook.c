@@ -61,13 +61,7 @@ int show_one_page(struct page *p)
             PRINT_DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
-#if 1
-        // if need change page
-        if ((cf->ymin + cf->height) > dsp_ops->yres ) {
-            PRINT_DBG("Page is full\n");
-            return (cur_buf - p->buf);
-        }
-#endif
+
         cur_buf += len;
         PRINT_DBG("code:%x len=%d\n", code, len);
 
@@ -91,21 +85,24 @@ int show_one_page(struct page *p)
             continue;
         }
 
-        // if need change line
-        // 1. meet enter;
-        // 2. meet x edge;
+        // meet x edge;
         if ((cf->xmin + cf->width) > dsp_ops->xres) {
+            PRINT_DBG("need change line\n");
             // reset cell frame
             cf->xmin = startx;
             cf->xmax = cf->xmin + cf->width;
             cf->ymin += cf->height;
             cf->ymax = cf->ymin + cf->height;
-
             // reset font frame
             ff->xmin = cf->xmin;
             ff->xmax = ff->xmin + ff->width;
             ff->ymin = ff->ymin + cf->height;
             ff->ymax = ff->ymin + ff->height;
+        }
+        PRINT_DBG("%d %d %d\n", cf->ymin, cf->height, dsp_ops->yres);
+        if ((cf->ymin + cf->height) >= dsp_ops->yres ) {
+            PRINT_DBG("Page is full\n");
+            return (cur_buf - p->buf - len);
         }
 
 #if 1
@@ -149,11 +146,8 @@ int show_one_page(struct page *p)
         default:
             break;
         }
-
         cf->xmin += cf->width;
-        // sleep(1);
     }
-    PRINT_DBG("show_one_page end\n");
     return (cur_buf - p->buf);
 }
 
@@ -184,8 +178,6 @@ int show_next_page(void)
         cur_list = &(cur_page->list);
         next_page = list_entry(cur_list->next, struct page, list);
     }
-    PRINT_DBG("len=%d\n", len);
-
     // end of novel
     if ((cur_page->buf + len - txt.buf) >= txt.length) {
         PRINT_DBG("end of novel\n");
@@ -217,12 +209,15 @@ int show_prev_page(void)
     return 0;
 }
 
-int open_txt(char *txt_file, char *ttc_file, char *font_size)
+int open_txt(int argc, char **argv)
 {
     struct stat stat_buf;
     const unsigned char *buf;
     int i = 0;
-
+    char *txt_file = argv[1];
+    char *ttc_file = argv[2];
+    char *font_size = argv[3];
+    
     strcpy(txt.ttc_path, ttc_file);
     if ((txt.fd = open(txt_file, O_RDONLY)) == -1) {
         PRINT_ERR("fail to open %s\n", txt_file);
@@ -300,7 +295,7 @@ int main(int argc, char **argv)
         print_usage(argc, argv);
         return -1;
     }
-    if (open_txt(argv[1], argv[2], argv[3]) == -1) {
+    if (open_txt(argc, argv) == -1) {
         PRINT_ERR("fail to open txt file %s\n", argv[1]);
         return -1;
     }
