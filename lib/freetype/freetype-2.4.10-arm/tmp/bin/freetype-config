@@ -9,7 +9,7 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
-prefix=/home/fa/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
+prefix=/media/FA/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
 exec_prefix=${prefix}
 exec_prefix_set=no
 includedir=${prefix}/include

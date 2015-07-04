@@ -47,7 +47,7 @@ DISTCLEAN += $(OBJ_BUILD)/config.cache    \
 
 # Standard installation variables.
 #
-prefix       := /home/fa/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
+prefix       := /media/FA/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
 exec_prefix  := ${prefix}
 libdir       := ${exec_prefix}/lib
 bindir       := ${exec_prefix}/bin

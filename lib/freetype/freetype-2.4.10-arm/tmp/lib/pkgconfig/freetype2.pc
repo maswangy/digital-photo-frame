@@ -1,4 +1,4 @@
-prefix=/home/fa/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
+prefix=/media/FA/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

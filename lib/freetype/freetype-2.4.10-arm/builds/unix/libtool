@@ -99,7 +99,7 @@ EGREP="/bin/grep -E"
 FGREP="/bin/grep -F"
 
 # A BSD- or MS-compatible name lister.
-NM="/opt/arm-linux-gnueabihf-4.7/bin//arm-linux-gnueabihf-nm -B"
+NM="/opt/gcc-odroid/bin//arm-linux-gnueabihf-nm -B"
 
 # Whether we need soft or hard links.
 LN_S="ln -s"
@@ -275,10 +275,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/opt/arm-linux-gnueabihf-4.7/lib/gcc/arm-linux-gnueabihf/4.7.3 /opt/arm-linux-gnueabihf-4.7/lib/gcc /opt/arm-linux-gnueabihf-4.7/lib/gcc/arm-linux-gnueabihf /opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/lib /opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/libc/lib /opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/libc/lib/arm-linux-gnueabihf /opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/libc/usr/lib /opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/libc/usr/lib/arm-linux-gnueabihf "
+sys_lib_search_path_spec="/opt/gcc-odroid/lib/gcc/arm-linux-gnueabihf/4.7.3 /opt/gcc-odroid/lib/gcc /opt/gcc-odroid/lib/gcc/arm-linux-gnueabihf /opt/gcc-odroid/arm-linux-gnueabihf/lib /opt/gcc-odroid/arm-linux-gnueabihf/libc/lib /opt/gcc-odroid/arm-linux-gnueabihf/libc/lib/arm-linux-gnueabihf /opt/gcc-odroid/arm-linux-gnueabihf/libc/usr/lib /opt/gcc-odroid/arm-linux-gnueabihf/libc/usr/lib/arm-linux-gnueabihf "
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/lib/i386-linux-gnu/mesa /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/mesa-egl /usr/lib/x86_64-linux-gnu/mesa "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/i386-linux-gnu/mesa /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/mesa /lib32 /usr/lib32 "
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -295,7 +295,7 @@ striplib="arm-linux-gnueabihf-strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/opt/arm-linux-gnueabihf-4.7/arm-linux-gnueabihf/bin/ld"
+LD="/opt/gcc-odroid/arm-linux-gnueabihf/bin/ld"
 
 # How to create reloadable object files.
 reload_flag=" -r"

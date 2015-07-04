@@ -52,7 +52,9 @@ int show_one_page(struct page *p)
     cf->xmax = cf->xmin + cf->width;
     cf->ymin = starty;
     cf->ymax = cf->ymin + cf->height;
+    PRINT_DBG("end:%x\n", p->buf + txt.length);
     while (cur_buf < (p->buf + txt.length)) {
+        PRINT_DBG("Y\n");
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
             PRINT_DBG("Fail to get_char_code\n");
             return (cur_buf - p->buf);
@@ -63,8 +65,8 @@ int show_one_page(struct page *p)
         }
 
         cur_buf += len;
+        PRINT_DBG("cur:%x\n", cur_buf);
         PRINT_DBG("code:%x len=%d\n", code, len);
-
         // handle enter
         // 1. windows enter: 0d 0a = \r \n
         // 2. unix enter: 0a = \n
@@ -99,13 +101,12 @@ int show_one_page(struct page *p)
             ff->ymin = ff->ymin + cf->height;
             ff->ymax = ff->ymin + ff->height;
         }
-        PRINT_DBG("%d %d %d\n", cf->ymin, cf->height, dsp_ops->yres);
         if ((cf->ymin + cf->height) >= dsp_ops->yres ) {
             PRINT_DBG("Page is full\n");
             return (cur_buf - p->buf - len);
         }
 
-#if 1
+#if 0
         PRINT_DBG("xmin:%d\n", ff->xmin);
         PRINT_DBG("xmax:%d\n", ff->xmax);
         PRINT_DBG("ymin:%d\n", ff->ymin);
@@ -113,7 +114,6 @@ int show_one_page(struct page *p)
         PRINT_DBG("width:%d\n", ff->width);
         PRINT_DBG("height:%d\n", ff->height);
 #endif
-        PRINT_DBG("draw_pixel\n");
         int i, j, k;
         unsigned char byte;
         int color = 0;

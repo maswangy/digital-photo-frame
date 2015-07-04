@@ -88,10 +88,12 @@ static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, s
     ff->ymax = bbox.yMin + ft_bitmap->rows;
     ff->width = ft_bitmap->width;
     ff->height = ft_bitmap->rows;
+#if 0
     PRINT_DBG("\npen.x = %d, pen.y = %d, xMin = %d, xMax = %d, yMin = %d, yMax = %d\n", \
             pen.x / 64, pen.y / 64, \
             ff->xmin, ff->xmax, ff->ymin, ff->ymax);
     PRINT_DBG("width=%d, height=%d\n", ff->width, ff->height);
+#endif    
     return 0;
 }
 

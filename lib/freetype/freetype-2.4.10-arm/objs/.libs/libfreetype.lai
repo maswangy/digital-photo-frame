@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/fa/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp/lib'
+libdir='/media/FA/opensource/digital-photo-frame/lib/freetype/freetype-2.4.10-arm/tmp/lib'
