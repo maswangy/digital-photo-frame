@@ -95,11 +95,20 @@ int show_one_page(struct page *p)
         // 1. meet enter;
         // 2. meet x edge;
         if ((cf->xmin + cf->width) > dsp_ops->xres) {
+            // reset cell frame
             cf->xmin = startx;
+            cf->xmax = cf->xmin + cf->width;
             cf->ymin += cf->height;
+            cf->ymax = cf->ymin + cf->height;
+
+            // reset font frame
+            ff->xmin = cf->xmin;
+            ff->xmax = ff->xmin + ff->width;
+            ff->ymin = ff->ymin + cf->height;
+            ff->ymax = ff->ymin + ff->height;
         }
 
-#if 0
+#if 1
         PRINT_DBG("xmin:%d\n", ff->xmin);
         PRINT_DBG("xmax:%d\n", ff->xmax);
         PRINT_DBG("ymin:%d\n", ff->ymin);
@@ -107,6 +116,7 @@ int show_one_page(struct page *p)
         PRINT_DBG("width:%d\n", ff->width);
         PRINT_DBG("height:%d\n", ff->height);
 #endif
+        PRINT_DBG("draw_pixel\n");
         int i, j, k;
         unsigned char byte;
         int color = 0;
@@ -119,7 +129,6 @@ int show_one_page(struct page *p)
                     byte = bitmap[i*ff->width/8 + k];
                     for (j = 7; j >= 0; j--) {
                         if (byte & (1<<j)) {
-                            //PRINT_DBG("draw_pixel\n");
                             dsp_ops->draw_pixel(ff->xmin + (8*k) + (7-j), ff->ymin + i, color);
                         }
                     }
