@@ -12,6 +12,7 @@
 #include "encode.h"
 #include "bitmap.h"
 #include "display.h"
+#include "input.h"
 #include "config.h"
 
 struct txt_info txt;
@@ -210,7 +211,7 @@ int open_txt(int argc, char **argv)
     char *txt_file = argv[1];
     char *ttc_file = argv[2];
     char *font_size = argv[3];
-    
+
     strcpy(txt.ttc_path, ttc_file);
     if ((txt.fd = open(txt_file, O_RDONLY)) == -1) {
         PRINT_ERR("fail to open %s\n", txt_file);
@@ -287,8 +288,6 @@ void print_usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    char c;
-
     if (argc != 4) {
         print_usage(argc, argv);
         return -1;
@@ -349,18 +348,29 @@ int main(int argc, char **argv)
     show_next_page();
 
     PRINT_INFO("\n\nusage: n[next page], p[previous page]\n");
+
+    struct input_event event;
+    input_init();
+    input_ops_init();
     while (1) { 
-        switch (c = getchar()) {
-        case 'n':
-            show_next_page();
-            break;
-        case 'p':
-            show_prev_page();
-            break;
-        default:
-            break;
+        event.type = INPUT_TYPE_UNKNOWN;
+        event.value = INPUT_VALUE_UNKNOWN;
+        if (get_input_ops_event(&event) == 0) {
+            switch (event.value) {
+            case INPUT_VALUE_DOWN:
+                show_next_page();
+                break;
+            case INPUT_VALUE_UP:
+                show_prev_page();
+                break;
+            case INPUT_VALUE_EXIT:
+                goto exit_ebook;
+            default:
+                break;
+            }
         }
     }
+    exit_ebook:
     if (display_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");
         goto exit;

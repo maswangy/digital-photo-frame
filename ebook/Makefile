@@ -25,7 +25,10 @@ OBJS := ebook.o \
 		bitmap/hzk.o \
 		bitmap/freetype.o \
 		display/display.o \
-		display/fb.o
+		display/fb.o \
+		input/input.o \
+		input/stdin.o \
+		input/touchscreen.o \
 		
 all: $(OBJS)
 	$(CC) -o $(PRJ) $^ $(LDFLAGS)
