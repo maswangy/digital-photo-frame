@@ -67,7 +67,7 @@ int encode_select(struct txt_info *txt)
 
     list_for_each(list, &entry) {
         struct encode_ops *ops = list_entry(list, struct encode_ops, list);
-        if (ops->is_supported(txt->buf, txt->length)) {
+        if (ops->is_supported(txt->start, txt->length)) {
             txt->ecd_ops = ops;
             PRINT_INFO("selected encode:\n%s\n\n", ops->name);
             return 0;

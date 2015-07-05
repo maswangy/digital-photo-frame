@@ -52,9 +52,7 @@ int show_one_page(struct page *p)
     cf->xmax = cf->xmin + cf->width;
     cf->ymin = starty;
     cf->ymax = cf->ymin + cf->height;
-    PRINT_DBG("end:%x\n", p->buf + txt.length);
-    while (cur_buf < (p->buf + txt.length)) {
-        PRINT_DBG("Y\n");
+    while (cur_buf < txt.end) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
             PRINT_DBG("Fail to get_char_code\n");
             return (cur_buf - p->buf);
@@ -65,8 +63,7 @@ int show_one_page(struct page *p)
         }
 
         cur_buf += len;
-        PRINT_DBG("cur:%x\n", cur_buf);
-        PRINT_DBG("code:%x len=%d\n", code, len);
+        // PRINT_DBG("code:%x len=%d\n", code, len);
         // handle enter
         // 1. windows enter: 0d 0a = \r \n
         // 2. unix enter: 0a = \n
@@ -89,7 +86,7 @@ int show_one_page(struct page *p)
 
         // meet x edge;
         if ((cf->xmin + cf->width) > dsp_ops->xres) {
-            PRINT_DBG("need change line\n");
+            PRINT_DBG("line is full\n");
             // reset cell frame
             cf->xmin = startx;
             cf->xmax = cf->xmin + cf->width;
@@ -102,7 +99,7 @@ int show_one_page(struct page *p)
             ff->ymax = ff->ymin + ff->height;
         }
         if ((cf->ymin + cf->height) >= dsp_ops->yres ) {
-            PRINT_DBG("Page is full\n");
+            PRINT_DBG("page is full\n");
             return (cur_buf - p->buf - len);
         }
 
@@ -155,7 +152,7 @@ void page_list(void)
 {
     struct list_head *list;
 
-    PRINT_DBG("page_list:\n");
+    PRINT_INFO("page_list:\n");
     list_for_each(list, &(page_entry.list)) {
         struct page *p = list_entry(list, struct page, list);
         PRINT_INFO("%d\n", p->id);
@@ -168,8 +165,6 @@ int show_next_page(void)
     struct list_head *cur_list = &(cur_page->list);
     struct page *next_page = list_entry(cur_list->next, struct page, list);
 
-    page_list();
-
     if (next_page->buf == NULL) {
         len = show_one_page(cur_page);
     } else {
@@ -179,7 +174,7 @@ int show_next_page(void)
         next_page = list_entry(cur_list->next, struct page, list);
     }
     // end of novel
-    if ((cur_page->buf + len - txt.buf) >= txt.length) {
+    if ((cur_page->buf + len - txt.start) >= txt.length) {
         PRINT_DBG("end of novel\n");
         return 1;
     }
@@ -212,8 +207,6 @@ int show_prev_page(void)
 int open_txt(int argc, char **argv)
 {
     struct stat stat_buf;
-    const unsigned char *buf;
-    int i = 0;
     char *txt_file = argv[1];
     char *ttc_file = argv[2];
     char *font_size = argv[3];
@@ -229,28 +222,33 @@ int open_txt(int argc, char **argv)
         return -1;
     }
 
-    txt.buf = (unsigned char *)mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
-    if (txt.buf == MAP_FAILED) {
+    txt.start = (unsigned char *)mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
+    if (txt.start == MAP_FAILED) {
         PRINT_ERR("fail to mmap %d\n", txt.fd);
         return -1;
     }
     txt.length = stat_buf.st_size;
+    txt.end = txt.start + txt.length;
 
     PRINT_DBG("txt:\n");
-    buf = txt.buf;
+#ifdef DEBUG
+    unsigned char *buf;
+    int i = 0;
+    buf = txt.start;
     for (i=0; i<32; i++) {
         PRINT_DBG("%02x ", (0xff & buf[i]));
         if (!((i+1)%16) ) {
             PRINT_DBG("\n");
         }
     }
+#endif
     txt.font_size = atoi(font_size);
     return 0;
 }
 
 void close_txt()
 {
-    munmap((void*)txt.buf, txt.length);
+    munmap((void*)txt.start, txt.length);
     close(txt.fd);
 }
 
@@ -258,25 +256,25 @@ void txt_head_remove(void)
 {
     unsigned char *head;
     if (txt.ecd_ops->type == ENCODE_UTF8) {
-        head = txt.buf;
+        head = txt.start;
         if (head[0] == 0xef && head[1] == 0xbb && head[2] == 0xbf) {
-            txt.buf = txt.buf + 3;
+            txt.start = txt.start + 3;
             txt.length -= 3;
         }
     }
 
     if (txt.ecd_ops->type == ENCODE_UTF16BE) {
-        head = txt.buf;
+        head = txt.start;
         if (head[0]==0xfe && head[1]==0xff) {
-            txt.buf = txt.buf + 2;
+            txt.start = txt.start + 2;
             txt.length -= 2;
         }
     }
 
     if (txt.ecd_ops->type == ENCODE_UTF16LE) {
-        head = txt.buf;
+        head = txt.start;
         if (head[0]==0xff && head[1]==0xfe) {
-            txt.buf = txt.buf + 2;
+            txt.start = txt.start + 2;
             txt.length -= 2;
         }
     }
@@ -346,7 +344,7 @@ int main(int argc, char **argv)
     // first page
     cur_page = malloc(sizeof(struct page));
     cur_page->id = 1;
-    cur_page->buf = txt.buf;
+    cur_page->buf = txt.start;
     list_add(&(cur_page->list), &(page_entry.list));
     show_next_page();
 

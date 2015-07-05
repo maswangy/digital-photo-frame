@@ -27,7 +27,8 @@ struct page {
 struct txt_info {
     int fd;
     char ttc_path[64];
-    unsigned char *buf;
+    unsigned char *start;
+    unsigned char *end;
     int length;
     int font_size;
     struct encode_ops *ecd_ops;
@@ -48,11 +49,13 @@ struct txt_info {
 
 #define DISPLAY_FB          (1)
 
-#define PRINT_ERR printf
+#define DEBUG
+#ifdef DEBUG
 #define PRINT_DBG printf
+#else
+#define PRINT_DBG(...)
+#endif
+#define PRINT_ERR printf
 #define PRINT_INFO printf
-// #define PRINT_ERR(...)
-// #define PRINT_DBG(...)
-// #define PRINT_INFO(...)
 
 #endif /* __CONFIG_H_ */
