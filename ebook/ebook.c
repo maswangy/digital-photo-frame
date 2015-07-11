@@ -297,6 +297,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // encode module
     if (encode_init() == -1) {
         PRINT_ERR("fail to init encode module\n");
         goto exit;
@@ -311,6 +312,7 @@ int main(int argc, char **argv)
 
     txt_head_remove();
 
+    // bitmap module
     if (bitmap_init() == -1) {
         PRINT_ERR("fail to init bitmap module\n");
         goto exit;
@@ -323,6 +325,7 @@ int main(int argc, char **argv)
         goto exit;
     }
 
+    // display module
     if (display_init() == -1) {
         PRINT_ERR("fail to init display module\n");
         goto exit;
@@ -340,7 +343,7 @@ int main(int argc, char **argv)
     page_entry.id = -1;
     INIT_LIST_HEAD(&(page_entry.list));
 
-    // first page
+    // show first page
     cur_page = malloc(sizeof(struct page));
     cur_page->id = 1;
     cur_page->buf = txt.start;
@@ -349,7 +352,9 @@ int main(int argc, char **argv)
 
     PRINT_INFO("\n\nusage: n[next page], p[previous page]\n");
 
+    // input module
     struct input_event event;
+    int q = 0;
     input_init();
     input_ops_init();
     while (1) { 
@@ -364,13 +369,16 @@ int main(int argc, char **argv)
                 show_prev_page();
                 break;
             case INPUT_VALUE_EXIT:
-                goto exit_ebook;
+                q = 1;
+                break;
             default:
                 break;
             }
         }
+        if (q == 1) {
+            break;
+        }
     }
-    exit_ebook:
     if (display_exit() == -1) {
         PRINT_ERR("fail to exit encode module\n");
         goto exit;
