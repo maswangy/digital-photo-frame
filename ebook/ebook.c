@@ -87,7 +87,7 @@ int show_one_page(struct page *p)
 
         // meet x edge;
         if ((cf->xmin + cf->width) > dsp_ops->xres) {
-            PRINT_DBG("line is full\n");
+            // PRINT_DBG("line is full\n");
             // reset cell frame
             cf->xmin = startx;
             cf->xmax = cf->xmin + cf->width;
@@ -100,7 +100,7 @@ int show_one_page(struct page *p)
             ff->ymax = ff->ymin + ff->height;
         }
         if ((cf->ymin + cf->height) >= dsp_ops->yres ) {
-            PRINT_DBG("page is full\n");
+            // PRINT_DBG("page is full\n");
             return (cur_buf - p->buf - len);
         }
 
@@ -186,7 +186,7 @@ int show_next_page(void)
         struct page *new_page = malloc(sizeof(struct page));
         new_page->buf = cur_page->buf + len;
         new_page->id = cur_page->id + 1;
-        PRINT_DBG("add new page: %d\n\n", new_page->id);
+        PRINT_DBG("add new page: %d\n", new_page->id);
         list_add_tail(&(new_page->list), &(page_entry.list));
     }
     return 0;
@@ -300,14 +300,14 @@ int main(int argc, char **argv)
     // encode module
     if (encode_init() == -1) {
         PRINT_ERR("fail to init encode module\n");
-        goto exit;
+        goto err_encode_init;
     }
 
     encode_list();
 
     if (encode_select(&txt) == -1) {
         PRINT_ERR("fail to select encode type\n");
-        goto exit;
+        goto err_encode_init;
     }
 
     txt_head_remove();
@@ -315,27 +315,27 @@ int main(int argc, char **argv)
     // bitmap module
     if (bitmap_init() == -1) {
         PRINT_ERR("fail to init bitmap module\n");
-        goto exit;
+        goto err_bitmap_init;
     }
 
     bitmap_list();
 
     if (bitmap_select(&txt) == -1) {
         PRINT_ERR("fail to select bitmap type\n");
-        goto exit;
+        goto err_bitmap_init;
     }
 
     // display module
     if (display_init() == -1) {
         PRINT_ERR("fail to init display module\n");
-        goto exit;
+        goto err_display_init;
     }
 
     display_list();
 
     if (display_select(&txt) == -1) {
         PRINT_ERR("fail to select display type\n");
-        goto exit;
+        goto err_display_init;
     }
 
     // head page, not have any data
@@ -350,17 +350,26 @@ int main(int argc, char **argv)
     list_add(&(cur_page->list), &(page_entry.list));
     show_next_page();
 
-    PRINT_INFO("\n\nusage: n[next page], p[previous page]\n");
+    PRINT_INFO("\n\nusage: +[next page], -[previous page] enter[exit ebook]\n");
 
     // input module
     struct input_event event;
     int q = 0;
-    input_init();
-    input_ops_init();
+    int max_fd = -1;
+
+    if (input_init(&txt) == -1){
+        PRINT_ERR("fail to init input module\n");
+        goto err_input_init;
+    }
+    if ((max_fd = input_ops_init()) == -1) {
+        PRINT_ERR("fail to init input ops\n");
+        goto err_input_init;
+    }
     while (1) { 
         event.type = INPUT_TYPE_UNKNOWN;
         event.value = INPUT_VALUE_UNKNOWN;
-        if (get_input_ops_event(&event) == 0) {
+
+        if (input_get_event(&event) == 0) {
             switch (event.value) {
             case INPUT_VALUE_DOWN:
                 show_next_page();
@@ -374,27 +383,19 @@ int main(int argc, char **argv)
             default:
                 break;
             }
+            if (q == 1) {
+                break;
+            }
         }
-        if (q == 1) {
-            break;
-        }
-    }
-    if (display_exit() == -1) {
-        PRINT_ERR("fail to exit encode module\n");
-        goto exit;
     }
 
-    if (bitmap_exit() == -1) {
-        PRINT_ERR("fail to exit encode module\n");
-        goto exit;
-    }
-
-    if (encode_exit() == -1) {
-        PRINT_ERR("fail to exit encode module\n");
-        goto exit;
-    }
-
-    exit:
+    err_input_init:
+    display_exit();
+    err_display_init:
+    bitmap_exit();
+    err_bitmap_init:
+    encode_exit();
+    err_encode_init:
     close_txt();
     return 0;
 }

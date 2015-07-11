@@ -30,6 +30,7 @@ struct input_ops {
     struct list_head list;
     char *name;
     int type;
+    int fd;
     int (*init)(void);
     void (*exit)(void);
     int (*get_input_event)(struct input_event *event);
@@ -37,9 +38,9 @@ struct input_ops {
 
 int register_input_ops(struct input_ops *ops);
 int deregister_input_ops(struct input_ops *ops);
-int input_init(void);
+int input_init(struct txt_info *txt);
 int input_exit(void);
-int get_input_ops_event(struct input_event *event);
+int input_get_event(struct input_event *event);
 int input_ops_init(void);
 
 int stdin_input_init(void);

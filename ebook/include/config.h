@@ -31,6 +31,7 @@ struct txt_info {
     unsigned char *end;
     int length;
     int font_size;
+    fd_set input_rfds;
     struct encode_ops *ecd_ops;
     struct bitmap_ops *bmp_ops;
     struct display_ops *dsp_ops;

@@ -15,6 +15,7 @@
 #define NB_DISABLE (0)
 
 static struct termios orig_ttystate;
+static struct input_ops stdin_input_ops;
 
 static void tty_nonblock(int state)
 {
@@ -32,6 +33,8 @@ static void tty_nonblock(int state)
         ttystate.c_lflag |= ICANON;                         // turn on canonical mode
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);            // set the terminal attributes.
+
+    stdin_input_ops.fd = STDIN_FILENO;
 }
 
 static int stdin_get_input_event(struct input_event *event)
