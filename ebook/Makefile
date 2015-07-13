@@ -1,42 +1,32 @@
-# ARM: make CROSS_COMPILE=arm-linux-gnueabihf-
-# X86: make
-PRJ := ebook 
+# := 表示PRJ为立即变量，$(shell basename `pwd`)会被立即展开  
+PRJ 			:= $(shell basename `pwd`)
 
-CROSS_COMPILE :=
+CROSS_COMPILE 	:=
+AS				:= $(CROSS_COMPILE)as
+LD				:= $(CROSS_COMPILE)ld
+CC				:= $(CROSS_COMPILE)gcc
+CPP				:= $(CC) -E
+AR				:= $(CROSS_COMPILE)ar
+NM				:= $(CROSS_COMPILE)nm
+STRIP			:= $(CROSS_COMPILE)strip
+OBJCOPY			:= $(CROSS_COMPILE)objcopy
+OBJDUMP			:= $(CROSS_COMPILE)objdump
 
-CFLAGS 	:= -Wall -O2 -c
-CFLAGS  += -I$(PWD)/include
+export AS LD CC CPP AR NM STRIP OBJCOPY OBJDUMP
 
-LDFLAGS := -lfreetype -lm
+CFLAGS 			:= -Wall -O2 -c
+CFLAGS  		+= -I$(PWD)/include 
+LDFLAGS 		:= -lfreetype -lm
 
-CC 	:= $(CROSS_COMPILE)gcc
-LD 	:= $(CROSS_COMPILE)ld
+export CFLAGS LDFLAGS
 
-OBJS := ebook.o \
-		encode/encode.o \
-		encode/ascii.o \
-		encode/iso8859.o \
-		encode/utf8.o \
-		encode/utf16_be.o \
-		encode/utf16_le.o \
-		bitmap/bitmap.o \
-		bitmap/ascii/ascii_8x8.o \
-		bitmap/ascii/ascii_8x16.o \
-		bitmap/hzk.o \
-		bitmap/freetype.o \
-		display/display.o \
-		display/fb.o \
-		input/input.o \
-		input/stdin.o \
-		input/touchscreen.o \
-		
-all: $(OBJS)
-	$(CC) -o $(PRJ) $^ $(LDFLAGS)
+$(PRJ):built-in.o 
+	# 编译出项目可执行文件
+	$(CC) -o $@ $^ $(LDFLAGS)
+	
+built-in.o：
+	# 编译出顶层目录的built-in.o
+	make -C ./ -f ./Makefile.build
 
 clean:
 	rm -f $(PRJ)
-	rm -f $(OBJS)
-
-%.o:%.c
-	$(CC) $(CFLAGS) -o $@ $<
-

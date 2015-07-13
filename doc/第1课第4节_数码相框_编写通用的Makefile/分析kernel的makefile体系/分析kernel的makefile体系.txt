@@ -1,0 +1,46 @@
+查看内核编译的详细信息
+# make V=1
+
+部分信息如下：
+make -f ./scripts/Makefile.build obj=net/ipv4/netfilter		// 进入某个目录，指定使用/scripts/Makefile.build进行编译；
+  gcc -Wp,-MD,net/ipv4/netfilter/.nf_nat_l3proto_ipv4.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.8/include -I./arch/x86/include -Iarch/x86/include/generated/uapi -Iarch/x86/include/generated  -Iinclude -I./arch/x86/include/uapi -Iarch/x86/include/generated/uapi -I./include/uapi -Iinclude/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -m64 -mno-80387 -mno-fp-ret-in-387 -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -Wframe-larger-than=2048 -fno-stack-protector -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -DCC_HAVE_ASM_GOTO  -DMODULE  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(nf_nat_l3proto_ipv4)"  -D"KBUILD_MODNAME=KBUILD_STR(nf_nat_ipv4)" -c -o net/ipv4/netfilter/nf_nat_l3proto_ipv4.o net/ipv4/netfilter/nf_nat_l3proto_ipv4.c
+
+  gcc -Wp,-MD,net/ipv4/netfilter/.nf_nat_proto_icmp.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.8/include -I./arch/x86/include -Iarch/x86/include/generated/uapi -Iarch/x86/include/generated  -Iinclude -I./arch/x86/include/uapi -Iarch/x86/include/generated/uapi -I./include/uapi -Iinclude/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -m64 -mno-80387 -mno-fp-ret-in-387 -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -Wframe-larger-than=2048 -fno-stack-protector -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -DCC_HAVE_ASM_GOTO  -DMODULE  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(nf_nat_proto_icmp)"  -D"KBUILD_MODNAME=KBUILD_STR(nf_nat_ipv4)" -c -o net/ipv4/netfilter/nf_nat_proto_icmp.o net/ipv4/netfilter/nf_nat_proto_icmp.c
+
+
+make -f ./scripts/Makefile.build obj=net/ipv4/netfilter
+指定使用./scripts/Makefile.build编译目录netfilter；
+
+gcc -Wp,-MD,net/ipv4/netfilter/.nf_nat_l3proto_ipv4.o.d ....... nf_nat_l3proto_ipv4.c
+使用-Wp,-MD选项生成依赖文件.xxx.o.d，该文件包含了编译nf_nat_l3proto_ipv4.c所需要的头文件列表；
+但是实际的依赖文件为.xxx.o.cmd，未发现是如何被改名的;
+
+
+分析./scripts/Makefile.build，搜索"cmd":
+// sort用于排序，会除去重复的项；wildcard返回符合pattern且真实存在的文件的名称；
+targets := $(wildcard $(sort $(targets)))	
+// 对于targets中的每一项，都将其变成这种pattern：.xxx.o.cmd	
+cmd_files := $(wildcard $(foreach f, $(targets), $(dir $(f)).$(notdir $(f)).cmd) )
+// 将依赖文件包含进来
+ifneq ($(cmd_files),)
+  include $(cmd_files)
+endif
+
+
+
+仿造内核编写通过Makefile：
+1. 顶层目录的Makefile处理如下事情：
+目标：项目可执行程序
+依赖：顶层目录的built-in.o
+
+顶层目录的built-in.o怎么来，由Makefile.build编译而来：
+目标：顶层目录built-in.o
+依赖：当前目录下的所有子目录里的buit-in.o和所有.o文件
+
+2. Makefile.build处理如下事情：
+将指定目录里的源码(包括子目录和.c文件)编译成一个built-in.o；
+
+
+
+
+
