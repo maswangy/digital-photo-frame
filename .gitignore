@@ -36,3 +36,7 @@ SI/*
 
 # ebook
 /ebook/ebook
+*.d
+
+# doc
+*.doc#

@@ -1,2 +1,45 @@
+# 将当前目录中obj-y指定的.o文件和obj-y指定的子目录里的built-in.o编译成当前目录的built-in.o
+# 假设当前目录的Makefile如下:
+# obj-y += a.o
+# obj-y += b.o
+# obj-y += c/
+# obj-y += d/
 
-# 获得
+PHONY := __build
+__build:
+
+obj-y :=
+# 将当前目录里的Makefile包含进来，以获得obj-y的值
+include Makefile
+
+# 获得字符串a.o b.o
+c_obj := $(filter %.o, $(obj-y))
+
+# 获得字符串c/built-in.o d/built-in.o
+subdir_obj := $(filter-out %.o, $(obj-y))
+subdir_obj := $(wildcard $(subdir_obj))
+subdir_obj := $(addsuffix /built-in.o,$(subdir_obj))
+
+# 获得字符串.a.o.d .b.o.d
+dep_file  := $(patsubst %.o,.%.o.d, $(c_obj))
+dep_file := $(wildcard $(dep_file))
+
+# 将依赖文件包含进来
+ifneq ($(dep_file),)
+  include $(dep_file)
+endif
+
+__build : built-in.o
+
+# c_obj即a.o b.o，subdir_obj即c/built-in.o d/built-in.o
+built-in.o : $(c_obj) $(subdir_obj)
+	$(LD) $^ -r -o $@
+
+%.o : %.c
+	$(CC) $(CFLAGS) -Wp,-MD,.$@.d $< -c -o $@
+
+%/built-in.o : %/ 
+	make -C $^ -f $(TOPDIR)/Makefile.build
+
+        
+.PHONY: $(PHONY)
