@@ -16,9 +16,9 @@ OBJDUMP			:= $(CROSS_COMPILE)objdump
 
 export AS LD CC CPP AR NM STRIP OBJCOPY OBJDUMP
 
-CFLAGS 			:= -Wall -O2
+CFLAGS 			:= -Wall -O2 -g
 CFLAGS  		+= -I$(PWD)/include 
-LDFLAGS 		:= -lfreetype -lm
+LDFLAGS 		:= -lfreetype -lm -pthread
 
 export CFLAGS LDFLAGS
 
@@ -28,9 +28,9 @@ obj-y += display/
 obj-y += encode/
 obj-y += input/
 
-$(PRJ) : 
+all : 
 	make -C ./ -f ./Makefile.build
-	$(CC) built-in.o -o $@ $(LDFLAGS)
+	$(CC) built-in.o -o $(PRJ) $(LDFLAGS)
 	
 clean:
 	rm -f $(shell find -name "*.o")

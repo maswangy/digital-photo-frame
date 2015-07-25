@@ -5,7 +5,10 @@
 # obj-y += c/
 # obj-y += d/
 
+# 参考内核/scripts/Makefile.build，定义一个变量PHONY
 PHONY := __build
+
+# 将伪目标__build放在最前面，优先生成它
 __build:
 
 obj-y :=
@@ -16,9 +19,9 @@ include Makefile
 c_obj := $(filter %.o, $(obj-y))
 
 # 获得字符串c/built-in.o d/built-in.o
-subdir_obj := $(filter-out %.o, $(obj-y))
-subdir_obj := $(wildcard $(subdir_obj))
-subdir_obj := $(addsuffix /built-in.o,$(subdir_obj))
+subdir := $(filter-out %.o, $(obj-y))
+subdir := $(wildcard $(subdir))
+subdir_obj := $(addsuffix built-in.o,$(subdir))
 
 # 获得字符串.a.o.d .b.o.d
 dep_file  := $(patsubst %.o,.%.o.d, $(c_obj))
@@ -29,17 +32,22 @@ ifneq ($(dep_file),)
   include $(dep_file)
 endif
 
-__build : built-in.o
+# 这两行非常重要，内核里也是这么做；
+# 有了这两行才会优先生成目标$(subdir), 然后再生成目标built-in.o
+PHONY += $(subdir)
+__build : $(subdir) built-in.o
 
 # c_obj即a.o b.o，subdir_obj即c/built-in.o d/built-in.o
 built-in.o : $(c_obj) $(subdir_obj)
 	$(LD) $^ -r -o $@
 
+# 只要当前目录的任一.c文件被修过过，就会编译该.c文件
 %.o : %.c
 	$(CC) $(CFLAGS) -Wp,-MD,.$@.d $< -c -o $@
 
-%/built-in.o : %/ 
-	make -C $^ -f $(TOPDIR)/Makefile.build
+# 无条件进入所有子目录进行编译
+$(subdir) : 
+	make -C $@ -f $(TOPDIR)/Makefile.build
 
-        
+# 定义伪目标        
 .PHONY: $(PHONY)
