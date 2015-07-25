@@ -9,6 +9,7 @@
 #ifndef __INPUT_H_
 #define __INPUT_H_
 
+#include <pthread.h>
 #include "config.h"
 
 #define INPUT_TYPE_UNKNOWN      (-1)
@@ -31,6 +32,7 @@ struct input_ops {
     char *name;
     int type;
     int fd;
+    pthread_t pid;
     int (*init)(void);
     void (*exit)(void);
     int (*get_input_event)(struct input_event *event);
