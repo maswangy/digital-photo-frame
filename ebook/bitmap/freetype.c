@@ -68,11 +68,11 @@ static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, s
     FT_Set_Transform(face, &matrix, &pen);
 
     if (FT_Load_Char(face, code, FT_LOAD_RENDER)) {
-        PRINT_DBG("fail to FT_Get_Glyph\n");
+        DBG("fail to FT_Get_Glyph\n");
         return -1;
     }
     if (FT_Get_Glyph(face->glyph, &glyph)) {
-        PRINT_DBG("fail to FT_Get_Glyph\n");
+        DBG("fail to FT_Get_Glyph\n");
         return -1;
     }
 
@@ -89,10 +89,10 @@ static int freetype_get_char_bitmap(unsigned int code, unsigned char **bitmap, s
     ff->width = ft_bitmap->width;
     ff->height = ft_bitmap->rows;
 #if 0
-    PRINT_DBG("\npen.x = %d, pen.y = %d, xMin = %d, xMax = %d, yMin = %d, yMax = %d\n", \
+    DBG("\npen.x = %d, pen.y = %d, xMin = %d, xMax = %d, yMin = %d, yMax = %d\n", \
             pen.x / 64, pen.y / 64, \
             ff->xmin, ff->xmax, ff->ymin, ff->ymax);
-    PRINT_DBG("width=%d, height=%d\n", ff->width, ff->height);
+    DBG("width=%d, height=%d\n", ff->width, ff->height);
 #endif    
     return 0;
 }
@@ -109,7 +109,7 @@ static struct bitmap_ops freetype_bitmap_ops = {
 int freetype_bitmap_init(void)
 {
     if (register_bitmap_ops(&freetype_bitmap_ops) == -1) {
-        PRINT_ERR("fail to register %s bitmap ops\n", freetype_bitmap_ops.name);
+        ERR("fail to register %s bitmap ops\n", freetype_bitmap_ops.name);
         return -1;
     }
     return 0;
@@ -118,7 +118,7 @@ int freetype_bitmap_init(void)
 int freetype_bitmap_exit(void)
 {
     if (deregister_bitmap_ops(&freetype_bitmap_ops) == -1) {
-        PRINT_ERR("fail to deregister %s bitmap ops\n", freetype_bitmap_ops.name);
+        ERR("fail to deregister %s bitmap ops\n", freetype_bitmap_ops.name);
         return -1;
     }
     return 0;

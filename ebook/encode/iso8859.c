@@ -19,7 +19,7 @@ static int iso8859_is_supported(const unsigned char *buf, int length)
     for (i = 0; i < length; i++) {
         int t = text_chars[buf[i]];
         if (t != T && t != I) {
-            // PRINT_DBG("Not iso8859 code:%x\n", buf[i]);
+            // DBG("Not iso8859 code:%x\n", buf[i]);
             return 0;
         }
     }
@@ -56,7 +56,7 @@ static struct encode_ops iso8859_encode_ops = {
 int iso8859_encode_init(void)
 {
     if (register_encode_ops(&iso8859_encode_ops) == -1) {
-        PRINT_ERR("fail to register %s encode ops\n", iso8859_encode_ops.name);
+        ERR("fail to register %s encode ops\n", iso8859_encode_ops.name);
         return -1;
     }
     return 0;
@@ -65,7 +65,7 @@ int iso8859_encode_init(void)
 int iso8859_encode_exit(void)
 {
     if (deregister_encode_ops(&iso8859_encode_ops) == -1) {
-        PRINT_ERR("fail to deregister %s encode ops\n", iso8859_encode_ops.name);
+        ERR("fail to deregister %s encode ops\n", iso8859_encode_ops.name);
         return -1;
     }
     return 0;

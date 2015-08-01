@@ -51,11 +51,11 @@ struct txt_info {
 
 #define DEBUG
 #ifdef DEBUG
-#define PRINT_DBG printf
+#define DBG printf
 #else
-#define PRINT_DBG(...)
+#define DBG(...)
 #endif
-#define PRINT_ERR printf
-#define PRINT_INFO printf
+#define ERR printf
+#define INFO printf
 
 #endif /* __CONFIG_H_ */

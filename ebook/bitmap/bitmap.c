@@ -32,13 +32,13 @@ void bitmap_list(void)
     struct list_head *list;
     int i = 1;
 
-    PRINT_INFO("registered bitmap:\n");
+    INFO("registered bitmap:\n");
     list_for_each(list, &entry) {
         struct bitmap_ops *ops = list_entry(list, struct bitmap_ops, list);
-        PRINT_INFO("%d.%s\n", i, ops->name);
+        INFO("%d.%s\n", i, ops->name);
         i++;
     }
-    PRINT_INFO("\n");
+    INFO("\n");
 }
 
 int bitmap_select(struct txt_info *txt)
@@ -51,7 +51,7 @@ int bitmap_select(struct txt_info *txt)
         if (ops->is_supported && ops->is_supported(ecd_ops->type)) {
             if (ops->init && ops->init(txt->ttc_path, txt->font_size) == 0) {
                 txt->bmp_ops = ops;
-                PRINT_INFO("selected bitmap:\n%s\n\n", ops->name);
+                INFO("selected bitmap:\n%s\n\n", ops->name);
                 return 0;   
             }
         }
@@ -64,22 +64,22 @@ int bitmap_init(void)
     INIT_LIST_HEAD(&entry);
 
     if (freetype_bitmap_init() == -1) {
-        PRINT_ERR("fail to init freetype bitmap\n");
+        ERR("fail to init freetype bitmap\n");
         return -1;
     }
     
     if (hzk_bitmap_init() == -1) {
-        PRINT_ERR("fail to init hzk bitmap\n");
+        ERR("fail to init hzk bitmap\n");
         return -1;
     }
 
     if (ascii_8x8_bitmap_init() == -1) {
-        PRINT_ERR("fail to init ascii 8x8 bitmap\n");
+        ERR("fail to init ascii 8x8 bitmap\n");
         return -1;
     }
 
     if (ascii_8x16_bitmap_init() == -1) {
-        PRINT_ERR("fail to init ascii 8x16 bitmap\n");
+        ERR("fail to init ascii 8x16 bitmap\n");
         return -1;
     }
 
@@ -89,22 +89,22 @@ int bitmap_init(void)
 int bitmap_exit(void)
 {
     if (freetype_bitmap_exit() == -1) {
-        PRINT_ERR("fail to exit freetype bitmap\n");
+        ERR("fail to exit freetype bitmap\n");
         return -1;
     }
 
     if (hzk_bitmap_exit() == -1) {
-        PRINT_ERR("fail to exit ascii 8x8 bitmap\n");
+        ERR("fail to exit ascii 8x8 bitmap\n");
         return -1;
     }
     
     if (ascii_8x8_bitmap_exit() == -1) {
-        PRINT_ERR("fail to exit ascii 8x8 bitmap\n");
+        ERR("fail to exit ascii 8x8 bitmap\n");
         return -1;
     }
 
     if (ascii_8x16_bitmap_exit() == -1) {
-        PRINT_ERR("fail to exit ascii 8x16 bitmap\n");
+        ERR("fail to exit ascii 8x16 bitmap\n");
         return -1;
     }
 

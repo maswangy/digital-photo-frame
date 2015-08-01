@@ -42,7 +42,7 @@ static struct encode_ops utf16_be_encode_ops = {
 int utf16_be_encode_init(void)
 {
     if (register_encode_ops(&utf16_be_encode_ops) == -1) {
-        PRINT_ERR("fail to register %s encode ops\n", utf16_be_encode_ops.name);
+        ERR("fail to register %s encode ops\n", utf16_be_encode_ops.name);
         return -1;
     }
     return 0;
@@ -51,7 +51,7 @@ int utf16_be_encode_init(void)
 int utf16_be_encode_exit(void)
 {
     if (deregister_encode_ops(&utf16_be_encode_ops) == -1) {
-        PRINT_ERR("fail to deregister %s encode ops\n", utf16_be_encode_ops.name);
+        ERR("fail to deregister %s encode ops\n", utf16_be_encode_ops.name);
         return -1;
     }
     return 0;

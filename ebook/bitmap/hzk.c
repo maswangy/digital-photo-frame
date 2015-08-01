@@ -18,17 +18,17 @@ static int hzk_init(char *txt_path, int bitmap_size)
     
     // open HZK
     if ((fd_hzk = open("HZK16", O_RDONLY)) == -1) {
-        PRINT_ERR("fail to open HZK16\n");
+        ERR("fail to open HZK16\n");
         return -1;
     }
     // get HZK stat
     if (fstat(fd_hzk, &hzk_stat) == -1) {
-        PRINT_ERR("fail to fstat fd_hzk\n");
+        ERR("fail to fstat fd_hzk\n");
         return -1;
     }
     // map HZK
     if ((hzk_mem = mmap(NULL, hzk_stat.st_size, PROT_READ, MAP_SHARED, fd_hzk, 0)) == MAP_FAILED) {
-        PRINT_ERR("fail to mmap HZK16\n");
+        ERR("fail to mmap HZK16\n");
         return -1;
     }
 
@@ -85,7 +85,7 @@ static struct bitmap_ops hzk_bitmap_ops = {
 int hzk_bitmap_init(void)
 {
     if (register_bitmap_ops(&hzk_bitmap_ops) == -1) {
-        PRINT_ERR("fail to register %s bitmap ops\n", hzk_bitmap_ops.name);
+        ERR("fail to register %s bitmap ops\n", hzk_bitmap_ops.name);
         return -1;
     }
     return 0;
@@ -94,7 +94,7 @@ int hzk_bitmap_init(void)
 int hzk_bitmap_exit(void)
 {
     if (deregister_bitmap_ops(&hzk_bitmap_ops) == -1) {
-        PRINT_ERR("fail to deregister %s bitmap ops\n", hzk_bitmap_ops.name);
+        ERR("fail to deregister %s bitmap ops\n", hzk_bitmap_ops.name);
         return -1;
     }
     return 0;

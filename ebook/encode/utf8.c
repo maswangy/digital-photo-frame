@@ -55,7 +55,7 @@ static int utf8_is_supported(const unsigned char *buf, int length)
         }
     }
     if ( i != length ) {
-        // PRINT_DBG("Not utf8 code:%x\n", buf[i]);
+        // DBG("Not utf8 code:%x\n", buf[i]);
         return 0;
     } else {
         return 1;
@@ -126,7 +126,7 @@ static struct encode_ops utf8_encode_ops = {
 int utf8_encode_init(void)
 {
     if (register_encode_ops(&utf8_encode_ops) == -1) {
-        PRINT_ERR("fail to register %s encode ops\n", utf8_encode_ops.name);
+        ERR("fail to register %s encode ops\n", utf8_encode_ops.name);
         return -1;
     }
     return 0;
@@ -135,7 +135,7 @@ int utf8_encode_init(void)
 int utf8_encode_exit(void)
 {
     if (deregister_encode_ops(&utf8_encode_ops) == -1) {
-        PRINT_ERR("fail to deregister %s encode ops\n", utf8_encode_ops.name);
+        ERR("fail to deregister %s encode ops\n", utf8_encode_ops.name);
         return -1;
     }
     return 0;

@@ -41,7 +41,7 @@ static int stdin_get_input_event(struct input_event *event)
 {
     char c;
     c = getchar();
-    // PRINT_DBG("c=%c\n",c);
+    // DBG("c=%c\n",c);
     event->type = INPUT_TYPE_STDIN;
     switch(c) {
     case '+':
@@ -88,7 +88,7 @@ static struct input_ops stdin_input_ops = {
 int stdin_input_init(void)
 {
     if (register_input_ops(&stdin_input_ops) == -1) {
-        PRINT_ERR("fail to register %s input ops\n", stdin_input_ops.name);
+        ERR("fail to register %s input ops\n", stdin_input_ops.name);
         return -1;
     }
     return 0;
@@ -97,7 +97,7 @@ int stdin_input_init(void)
 int stdin_input_exit(void)
 {
     if (deregister_input_ops(&stdin_input_ops) == -1) {
-        PRINT_ERR("fail to deregister %s input ops\n", stdin_input_ops.name);
+        ERR("fail to deregister %s input ops\n", stdin_input_ops.name);
         return -1;
     }
     return 0;

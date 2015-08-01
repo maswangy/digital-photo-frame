@@ -30,7 +30,7 @@ int show_one_page(struct page *p)
     unsigned char *cur_buf = p->buf;
     int len;
 
-    PRINT_DBG("show page: %d\n", p->id);
+    DBG("show page: %d\n", p->id);
 
     ecd_ops = txt.ecd_ops;
     bmp_ops = txt.bmp_ops;
@@ -42,7 +42,7 @@ int show_one_page(struct page *p)
 #else               // ARM
     startx = starty = 0;
 #endif
-    PRINT_DBG("start(startx=%d, starty=%d) xres=%d yres=%d txt.length=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres, txt.length);
+    DBG("start(startx=%d, starty=%d) xres=%d yres=%d txt.length=%d\n", startx, starty, dsp_ops->xres, dsp_ops->yres, txt.length);
     dsp_ops->clear_screen(0);
 
     struct bitmap_info bif;
@@ -55,16 +55,16 @@ int show_one_page(struct page *p)
     cf->ymax = cf->ymin + cf->height;
     while (cur_buf < txt.end) {
         if ((len = ecd_ops->get_char_code(cur_buf, &code)) == -1) {
-            PRINT_DBG("Fail to get_char_code\n");
+            DBG("Fail to get_char_code\n");
             return (cur_buf - p->buf);
         }                
         if (bmp_ops->get_char_bitmap(code, &bitmap, &bif) == -1) {
-            PRINT_DBG("Fail to get_char_bitmap\n");
+            DBG("Fail to get_char_bitmap\n");
             return (cur_buf - p->buf);
         }
 
         cur_buf += len;
-        // PRINT_DBG("code:%x len=%d\n", code, len);
+        // DBG("code:%x len=%d\n", code, len);
         // handle enter
         // 1. windows enter: 0d 0a = \r \n
         // 2. unix enter: 0a = \n
@@ -87,7 +87,7 @@ int show_one_page(struct page *p)
 
         // meet x edge;
         if ((cf->xmin + cf->width) > dsp_ops->xres) {
-            // PRINT_DBG("line is full\n");
+            // DBG("line is full\n");
             // reset cell frame
             cf->xmin = startx;
             cf->xmax = cf->xmin + cf->width;
@@ -100,17 +100,17 @@ int show_one_page(struct page *p)
             ff->ymax = ff->ymin + ff->height;
         }
         if ((cf->ymin + cf->height) >= dsp_ops->yres ) {
-            // PRINT_DBG("page is full\n");
+            // DBG("page is full\n");
             return (cur_buf - p->buf - len);
         }
 
 #if 0
-        PRINT_DBG("xmin:%d\n", ff->xmin);
-        PRINT_DBG("xmax:%d\n", ff->xmax);
-        PRINT_DBG("ymin:%d\n", ff->ymin);
-        PRINT_DBG("ymax:%d\n", ff->ymax);
-        PRINT_DBG("width:%d\n", ff->width);
-        PRINT_DBG("height:%d\n", ff->height);
+        DBG("xmin:%d\n", ff->xmin);
+        DBG("xmax:%d\n", ff->xmax);
+        DBG("ymin:%d\n", ff->ymin);
+        DBG("ymax:%d\n", ff->ymax);
+        DBG("width:%d\n", ff->width);
+        DBG("height:%d\n", ff->height);
 #endif
         int i, j, k;
         unsigned char byte;
@@ -134,7 +134,7 @@ int show_one_page(struct page *p)
             color = 0xffffffff;
             for (i = 0; i < ff->height; i++) {
                 for (j = 0; j < ff->width; j++) {
-                    // PRINT_DBG("(%d, %d)%2x\n", ff->xmin + j , ff->ymin + i + offset, bitmap[i * ff->width + j]);
+                    // DBG("(%d, %d)%2x\n", ff->xmin + j , ff->ymin + i + offset, bitmap[i * ff->width + j]);
                     if (bitmap[i * ff->width + j] != 0) {
                         dsp_ops->draw_pixel(ff->xmin + j, ff->ymin + i + offset, color);
                     }
@@ -153,10 +153,10 @@ void page_list(void)
 {
     struct list_head *list;
 
-    PRINT_INFO("page_list:\n");
+    INFO("page_list:\n");
     list_for_each(list, &(page_entry.list)) {
         struct page *p = list_entry(list, struct page, list);
-        PRINT_INFO("%d\n", p->id);
+        INFO("%d\n", p->id);
     }
 }
 
@@ -176,7 +176,7 @@ int show_next_page(void)
     }
     // end of novel
     if ((cur_page->buf + len - txt.start) >= txt.length) {
-        PRINT_DBG("end of novel\n");
+        DBG("end of novel\n");
         return 1;
     }
 
@@ -186,7 +186,7 @@ int show_next_page(void)
         struct page *new_page = malloc(sizeof(struct page));
         new_page->buf = cur_page->buf + len;
         new_page->id = cur_page->id + 1;
-        PRINT_DBG("add new page: %d\n", new_page->id);
+        DBG("add new page: %d\n", new_page->id);
         list_add_tail(&(new_page->list), &(page_entry.list));
     }
     return 0;
@@ -214,32 +214,32 @@ int open_txt(int argc, char **argv)
 
     strcpy(txt.ttc_path, ttc_file);
     if ((txt.fd = open(txt_file, O_RDONLY)) == -1) {
-        PRINT_ERR("fail to open %s\n", txt_file);
+        ERR("fail to open %s\n", txt_file);
         return -1;
     }
 
     if (fstat(txt.fd, &stat_buf) == -1) {
-        PRINT_ERR("fail to fstat %d\n", txt.fd);
+        ERR("fail to fstat %d\n", txt.fd);
         return -1;
     }
 
     txt.start = (unsigned char *)mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, txt.fd, 0);
     if (txt.start == MAP_FAILED) {
-        PRINT_ERR("fail to mmap %d\n", txt.fd);
+        ERR("fail to mmap %d\n", txt.fd);
         return -1;
     }
     txt.length = stat_buf.st_size;
     txt.end = txt.start + txt.length;
 
-    PRINT_DBG("txt:\n");
+    DBG("txt:\n");
 #ifdef DEBUG
     unsigned char *buf;
     int i = 0;
     buf = txt.start;
     for (i=0; i<32; i++) {
-        PRINT_DBG("%02x ", (0xff & buf[i]));
+        DBG("%02x ", (0xff & buf[i]));
         if (!((i+1)%16) ) {
-            PRINT_DBG("\n");
+            DBG("\n");
         }
     }
 #endif
@@ -283,7 +283,7 @@ void txt_head_remove(void)
 
 void print_usage(int argc, char **argv)
 {
-    PRINT_ERR("Usage:%s txt_file font_file font_size\n", argv[0]);
+    ERR("Usage:%s txt_file font_file font_size\n", argv[0]);
 }
 
 int main(int argc, char **argv)
@@ -293,20 +293,20 @@ int main(int argc, char **argv)
         return -1;
     }
     if (open_txt(argc, argv) == -1) {
-        PRINT_ERR("fail to open txt file %s\n", argv[1]);
+        ERR("fail to open txt file %s\n", argv[1]);
         return -1;
     }
 
     // encode module
     if (encode_init() == -1) {
-        PRINT_ERR("fail to init encode module\n");
+        ERR("fail to init encode module\n");
         goto err_encode_init;
     }
 
     encode_list();
 
     if (encode_select(&txt) == -1) {
-        PRINT_ERR("fail to select encode type\n");
+        ERR("fail to select encode type\n");
         goto err_encode_init;
     }
 
@@ -314,27 +314,27 @@ int main(int argc, char **argv)
 
     // bitmap module
     if (bitmap_init() == -1) {
-        PRINT_ERR("fail to init bitmap module\n");
+        ERR("fail to init bitmap module\n");
         goto err_bitmap_init;
     }
 
     bitmap_list();
 
     if (bitmap_select(&txt) == -1) {
-        PRINT_ERR("fail to select bitmap type\n");
+        ERR("fail to select bitmap type\n");
         goto err_bitmap_init;
     }
 
     // display module
     if (display_init() == -1) {
-        PRINT_ERR("fail to init display module\n");
+        ERR("fail to init display module\n");
         goto err_display_init;
     }
 
     display_list();
 
     if (display_select(&txt) == -1) {
-        PRINT_ERR("fail to select display type\n");
+        ERR("fail to select display type\n");
         goto err_display_init;
     }
 
@@ -350,7 +350,7 @@ int main(int argc, char **argv)
     list_add(&(cur_page->list), &(page_entry.list));
     show_next_page();
 
-    PRINT_INFO("\n\nusage: +[next page], -[previous page] enter[exit ebook]\n");
+    INFO("\n\nusage: +[next page], -[previous page] enter[exit ebook]\n");
 
     // input module
     struct input_event event;
@@ -358,11 +358,11 @@ int main(int argc, char **argv)
     int max_fd = -1;
 
     if (input_init(&txt) == -1){
-        PRINT_ERR("fail to init input module\n");
+        ERR("fail to init input module\n");
         goto err_input_init;
     }
     if ((max_fd = input_ops_init()) == -1) {
-        PRINT_ERR("fail to init input ops\n");
+        ERR("fail to init input ops\n");
         goto err_input_init;
     }
     while (1) { 

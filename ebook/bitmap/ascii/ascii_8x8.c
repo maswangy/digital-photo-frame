@@ -55,7 +55,7 @@ static struct bitmap_ops ascii_8x8_bitmap_ops = {
 int ascii_8x8_bitmap_init(void)
 {
     if (register_bitmap_ops(&ascii_8x8_bitmap_ops) == -1) {
-        PRINT_ERR("fail to register %s bitmap ops\n", ascii_8x8_bitmap_ops.name);
+        ERR("fail to register %s bitmap ops\n", ascii_8x8_bitmap_ops.name);
         return -1;
     }
     return 0;
@@ -64,7 +64,7 @@ int ascii_8x8_bitmap_init(void)
 int ascii_8x8_bitmap_exit(void)
 {
     if (deregister_bitmap_ops(&ascii_8x8_bitmap_ops) == -1) {
-        PRINT_ERR("fail to deregister %s bitmap ops\n", ascii_8x8_bitmap_ops.name);
+        ERR("fail to deregister %s bitmap ops\n", ascii_8x8_bitmap_ops.name);
         return -1;
     }
     return 0;

@@ -62,12 +62,12 @@ int input_ops_init(void)
     list_for_each(list, &entry) {
         struct input_ops *ops = list_entry(list, struct input_ops, list);
         if (ops->init && ops->init() == -1) {
-            PRINT_ERR("fail to init input :%s\n", ops->name);
+            ERR("fail to init input :%s\n", ops->name);
             return -1;
         }
         // create thread
         if (pthread_create(&ops->pid, NULL, input_get_event_thread, ops->get_input_event) !=0 ) {
-            PRINT_ERR("fail to cread %s get_event thread\n", ops->name);
+            ERR("fail to cread %s get_event thread\n", ops->name);
             return -1;
         }
     }
@@ -78,7 +78,7 @@ int input_init(struct txt_info *txt)
 {
     INIT_LIST_HEAD(&entry);
     if (stdin_input_init() == -1) {
-        PRINT_ERR("fail to init stdin input\n");
+        ERR("fail to init stdin input\n");
         return -1;
     }
 
@@ -88,7 +88,7 @@ int input_init(struct txt_info *txt)
 int input_exit(void)
 {
     if (stdin_input_exit() == -1) {
-        PRINT_ERR("fail to exit stdin input\n");
+        ERR("fail to exit stdin input\n");
         return -1;
     }
     return 0;

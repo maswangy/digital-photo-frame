@@ -37,17 +37,17 @@ static int fb_init(void)
 
     // open fb
     if ((fd_fb = open("/dev/fb0", O_RDWR)) == -1) {
-        PRINT_ERR("fail to open /dev/fb0\n");
+        ERR("fail to open /dev/fb0\n");
         return -1;
     }
 
     // get fb var&fix info
     if (ioctl(fd_fb, FBIOGET_VSCREENINFO, &var) == -1) {
-        PRINT_ERR("fail to ioctl var\n");
+        ERR("fail to ioctl var\n");
         return -1;
     }
     if (ioctl(fd_fb, FBIOGET_FSCREENINFO, &fix) == -1) {
-        PRINT_ERR("fail to ioctl fix\n");
+        ERR("fail to ioctl fix\n");
         return -1;
     }
     fb_display_ops.xres = var.xres;
@@ -55,7 +55,7 @@ static int fb_init(void)
     fb_display_ops.bpp = var.bits_per_pixel;
     screen_bytes = fb_display_ops.xres * fb_display_ops.yres * fb_display_ops.bpp / 8;
     if ((fb_mem = mmap(NULL, screen_bytes, PROT_READ|PROT_WRITE, MAP_SHARED, fd_fb, 0)) == MAP_FAILED) {
-        PRINT_ERR("fail to mmap fb\n");
+        ERR("fail to mmap fb\n");
         return -1;
     }
     return 0;
@@ -89,7 +89,7 @@ static int fb_draw_pixel(int x, int y, unsigned int color)
         break;
     }
     default: {
-        PRINT_ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
+        ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
     }
     }
     return 0;
@@ -130,7 +130,7 @@ static int fb_clear_screen(int color)
     }
     default: {
         break;
-        PRINT_ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
+        ERR("Unsupported bpp:%d\n", fb_display_ops.bpp);
         return -1;
     }
     }
@@ -142,7 +142,7 @@ int fb_display_init(void)
     fb_init();
 
     if (register_display_ops(&fb_display_ops) == -1) {
-        PRINT_ERR("fail to register %s display ops\n", fb_display_ops.name);
+        ERR("fail to register %s display ops\n", fb_display_ops.name);
         return -1;
     }
     return 0;
@@ -151,7 +151,7 @@ int fb_display_init(void)
 int fb_display_exit(void)
 {
     if (deregister_display_ops(&fb_display_ops) == -1) {
-        PRINT_ERR("fail to deregister %s display ops\n", fb_display_ops.name);
+        ERR("fail to deregister %s display ops\n", fb_display_ops.name);
         return -1;
     }
     return 0;
